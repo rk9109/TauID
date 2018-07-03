@@ -4,13 +4,13 @@ import numpy as np
 from predict import update_progress
 from ROOT import *
 
-def create_data(filename, treeNum, name, random=True):
+def create_data(filename, treeNum, name, randomize=True):
 	"""
 	Return: h5file
-	Input: filename | ROOT file
-	       treeNum  | ROOT tree number 
-		   name     | Filename
-		   random   | Randomly order particles
+	Input: filename  | ROOT file
+	       treeNum   | ROOT tree number 
+		   name      | Filename
+		   randomize | Randomly order particles
 	"""
 	data_file = h5py.File(name + '.hdf5', 'w') 
 	rf = TFile(filename)      # open file
@@ -21,7 +21,7 @@ def create_data(filename, treeNum, name, random=True):
 	
 	x_arr = []
 	y_arr = []
-	"""
+	
 	for event in tree:
 		for jet_num, jet_id in enumerate(event.genjetid):  # iterate through jets
 			part_candidates = []
@@ -37,7 +37,7 @@ def create_data(filename, treeNum, name, random=True):
 				part_candidates.append([0, 0, 0, 0, 0, 0])
 	
 			candidates = part_candidates[:20]
-			if (random): random.shuffle(candidates)
+			if (randomize): random.shuffle(candidates)
 			candidates_flat = [item for sublist in candidates for item in sublist]	
 			candidates_flat.extend([event.genjetpt[jet_num], event.genjeteta[jet_num], event.genjetphi[jet_num],
 					                event.genjetenergy[jet_num]])
@@ -55,7 +55,7 @@ def create_data(filename, treeNum, name, random=True):
 	y_data = data_file.create_dataset('y_data', data = y_nparr)
 	
 	print('\nFile Generated!')
-	"""
+	
 	return None
 
 # ---------------
@@ -68,8 +68,8 @@ treeNum = "GenNtupler/gentree"
 
 create_data(filename1, treeNum, 'GluGluHToTauTau_Shuffled')
 create_data(filename2, treeNum, 'ZPrimeToTauTau_Shuffled')
-create_data(filename3, treeNum, 'QCD300To500_All')
-create_data(filename4, treeNum, 'QCD1500To2000_All')
+#create_data(filename3, treeNum, 'QCD300To500_All')
+#create_data(filename4, treeNum, 'QCD1500To2000_All')
 
 
 
