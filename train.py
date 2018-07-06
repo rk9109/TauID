@@ -26,13 +26,13 @@ def train(x_data, y_data, model, epochs, batch, train_split=0.5, val_split=0.25,
 
 print('Copying files...')
 
-signal_file = h5py.File('GluGluHToTauTau_Shuffled.hdf5', 'r')
+signal_file = h5py.File('GluGluHToTauTau_Base.hdf5', 'r')
 x_data = signal_file['x_data'][:] 
 y_data = signal_file['y_data'][:]
 
 # ---- Fit Data ----
 
-model = one_layer_dense(x_data.shape[1], 1)
+model = one_layer_dense(x_data.shape[1], 15)
 model, history, _, _ = train(x_data, y_data, model, 1000, 1024)
 
 plot_history(history)

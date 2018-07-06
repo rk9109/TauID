@@ -33,9 +33,9 @@ def onehot_data(x_data, y_data):
 
 	for idx, jet in enumerate(x_data):
 		for i in range(0, 120, 6):
-			if x_data[idx, i + 5] > 40: x_data[idx, i/2 + 126] = 1
+			if abs(x_data[idx, i + 5]) > 40: x_data[idx, i/2 + 126] = 1
 			
-			elif x_data[idx, i + 5] in [11, -11]: x_data[idx, i/2 + 125] = 1
+			elif abs(x_data[idx, i + 5]) == 11: x_data[idx, i/2 + 125] = 1
 			
 			elif x_data[idx, i + 5] == 22: x_data[idx, i/2 + 124] = 1
 	
