@@ -6,7 +6,7 @@ import h5py
 
 def one_layer_dense(input_dim, nclasses):
 	"""
-	docstring
+	One hidden layer
 	"""
 	model = Sequential()
 	
@@ -23,11 +23,12 @@ def one_layer_dense(input_dim, nclasses):
 
 def two_layer_dense(input_dim, nclasses):
 	"""
-	docstring
+	Two hidden layers
 	"""
 	model = Sequential()
 	
 	layers = [Dense(input_dim=input_dim, units=25, kernel_initializer='random_uniform', activation='relu'), 
+			  Dense(units=25, kernel_initializer='random_uniform', activation='relu'),
 			  Dense(units=10, kernel_initializer='random_uniform', activation='relu'),
 			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
 
@@ -38,35 +39,79 @@ def two_layer_dense(input_dim, nclasses):
 
 	return model
 
-def conv1D(): # ADD PARAMETERS
+def conv1D(nclasses):
 	"""
 	Three convolutional layers
 	"""
 	model = Sequential()
 
-	layers = []
+	layers = [Conv1D(filters=8, kernel_size=8, strides=1, padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
+			  Conv1D(filters=4, kernel_size=8, strides=2, padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
+			  Conv1D(filters=2, kernel_size=8, strides=3, padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
+			  Flatten(),
+			  Dense(units=32, kernel_initializer='random_uniform', activation='relu'),
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
+	
+	for layer in layers:
+		model.add(layer)
+	
+	model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
 	return model
 
-def conv2D(): # ADD PARAMETERS
+def conv2D(nclasses): 
 	"""
 	Three convolutional layers
 	"""
 	model = Sequential()
 
-	layers = []
+	layers = [Conv2D(filters=8, kernel_size=(10,10), strides=(1,1), padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
+			  Conv2D(filters=8, kernel_size=(10,10), strides=(1,1), padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
+			  Conv2D(filters=8, kernel_size=(10,10), strides=(1,1), padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
+			  Flatten(),
+			  Dense(units=32, kernel_initializer='random_uniform', activation='relu'),
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
+	
+	for layer in layers:
+		model.add(layer)
+	
+	model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
 	return model
 
-def lstm(): # ADD PARAMETERS
+def simple_lstm(nclasses):
 	"""
-	docstring
+	Simple LSTM
 	"""
 	model = Sequential()
 
-	layers = []
+	layers = [LSTM(units=80, return_sequences=True), 
+			  Flatten(),
+			  Dropout(0.1),
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
+
+	for layer in layers:
+		model.add(layer)
+	
+	model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
 	return model
 
+def simple_gru(nclasses):
+	"""
+	Simple GRU
+	"""
+	model = Sequential()
 
+	layers = [LSTM(units=80, return_sequences=True), 
+			  Flatten(),
+			  Dropout(0.1),
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
+
+	for layer in layers:
+		model.add(layer)
+	
+	model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+
+	return model
 

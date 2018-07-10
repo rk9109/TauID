@@ -151,8 +151,10 @@ filename4 = "/home/drankin/TauID/GenNtuple_QCD_HT1500to2000_TuneCP5_13TeV-madgra
 filename5 = "/home/pharris/GenNtuple.root"
 treeNum = "GenNtupler/gentree"
 
-create_data(filename1, treeNum, 15, 'GluGluHToTauTau_Base')
-create_data(filename2, treeNum, 15, 'ZPrimeToTauTau_Base')
-create_data_decay(filename5, treeNum, 15, 'Test_Decay')
+#create_data(filename1, treeNum, 15, 'GluGluHToTauTau_Base')
+#create_data(filename2, treeNum, 15, 'ZPrimeToTauTau_Base')
+create_data(filename3, treeNum, 15, 'QCD300To500_Base')
+create_data(filename4, treeNum, 15, 'QCD1500To2000_Base')
+#create_data_decay(filename5, treeNum, 15, 'Test_Decay')
 
 

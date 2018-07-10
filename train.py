@@ -17,7 +17,7 @@ def train(x_data, y_data, model, epochs, batch, train_split=0.5, val_split=0.25,
 	history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch, 
 					    callbacks=[early_stopping], validation_split=val_split, verbose=verbose)
 
-	test_loss, test_acc = model.evaluate(x_test, y_test, batch_size = batch)
+	test_loss, test_acc = model.evaluate(x_test, y_test, batch_size=batch)
 	print('\nLoss on test set: ' + str(test_loss) + ' Accuracy on test set: ' + str(test_acc))
 	
 	return model, history, test_loss, test_acc
@@ -27,14 +27,22 @@ def train(x_data, y_data, model, epochs, batch, train_split=0.5, val_split=0.25,
 print('Copying files...')
 
 signal_file = h5py.File('GluGluHToTauTau_Base.hdf5', 'r')
+background_file = h5py.File('QCD300To500_Base.hdf5', 'r')
 x_data = signal_file['x_data'][:] 
 y_data = signal_file['y_data'][:]
+x_back = background_file['x_data'][:]
+y_back = background_file['y_data'][:]
+
+#parameters = ['Pt', 'Energy']
+#x_data, y_data = remove_parameters(x_data, y_data, parameters, 15)
 
 # ---- Fit Data ----
 
-model = one_layer_dense(x_data.shape[1], 15)
+model = one_layer_dense(x_data.shape[1], 1)
 model, history, _, _ = train(x_data, y_data, model, 1000, 1024)
 
 plot_history(history)
-plot_roc(model, x_test, y_test)
+fpr, tpr, thresholds = plot_roc(model, x_data, y_data, x_back, y_back)
+loose_cut, medium_cut, tight_cut = get_workingpoints(fpr, tpr, thresholds)
+
 
