@@ -39,13 +39,13 @@ def two_layer_dense(input_dim, nclasses):
 
 	return model
 
-def conv1D(nclasses):
+def conv1D(input_dim, nclasses):
 	"""
 	Three convolutional layers
 	"""
 	model = Sequential()
 
-	layers = [Conv1D(filters=8, kernel_size=8, strides=1, padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
+	layers = [Conv1D(input_dim=input_dim, filters=8, kernel_size=8, strides=1, padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
 			  Conv1D(filters=4, kernel_size=8, strides=2, padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
 			  Conv1D(filters=2, kernel_size=8, strides=3, padding='same', kernel_initializer='he_normal', use_bias=True, activation='relu'),
 			  Flatten(),

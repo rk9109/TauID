@@ -27,7 +27,7 @@ def remove_jet(x_data, y_data, particles):
 	Remove jet information
 	"""
 	indices = [0, 1, 2, 3]
-	for idx in range(indices) = indices[idx] += 8*particles
+	for idx, _ in enumerate(indices): indices[idx] += 8*particles
 	x_data = np.delete(x_data, indices, axis=1)
 
 	return x_data, y_data
@@ -37,13 +37,13 @@ def remove_parameters(x_data, y_data, parameters, particles):
 	Remove parameter information: (Pt, Eta, Phi, Energy, Charge, ID)
 	"""
 	param_dict = {'Pt':[0], 'Eta':[1], 'Phi':[2], 'Energy':[3], 'Charge':[4], 'ID':[5,6,7]}
-	indices = []
+	ref_indices = []; indices = []
 
 	for p in parameters:
-		indices.extend(param_dict[p])
+		ref_indices.extend(param_dict[p])
 		
-	for i in range(1, particles):
-		for idx in indices:
+	for i in range(particles):
+		for idx in ref_indices:
 			indices.append(idx + i*8)
 	
 	x_data = np.delete(x_data, indices, axis=1)

@@ -60,6 +60,7 @@ def create_data(filename, treeNum, particles, name, randomize=True):
 	x_nparr = np.array(x_arr)
 	y_nparr = np.array(y_arr)
 	x_data = data_file.create_dataset('x_data', data = x_nparr)
+	y_data = data_file.create_dataset('y_data', data = y_nparr)
 	print('\nFile Generated!')
 	
 	return None
@@ -144,17 +145,15 @@ def create_data_decay(filename, treeNum, particles, name, randomize=True):
 
 # ---------------
 
-filename1 = "/home/drankin/TauID/GenNtuple_GluGluHToTauTau_M125_13TeV_powheg_pythia8.root"
-filename2 = "/home/drankin/TauID/GenNtuple_ZprimeToTauTau_M-3000_TuneCP5_13TeV-pythia8-tauola.root"
-filename3 = "/home/drankin/TauID/GenNtuple_QCD_HT300to500_TuneCP5_13TeV-madgraph-pythia8.root"
-filename4 = "/home/drankin/TauID/GenNtuple_QCD_HT1500to2000_TuneCP5_13TeV-madgraph-pythia8.root"
-filename5 = "/home/pharris/GenNtuple.root"
+filename1 = "/data/t3home000/rinik/GenNtuple_GluGluHToTauTau_M125_13TeV_powheg_pythia8.root"
+filename2 = "/data/t3home000/rinik/GenNtuple_ZprimeToTauTau_M-3000_TuneCP5_13TeV-pythia8-tauola.root"
+filename3 = "/data/t3home000/rinik/GenNtuple_QCD_HT300to500_TuneCP5_13TeV-madgraph-pythia8.root"
+filename4 = "/data/t3home000/rinik/GenNtuple_QCD_HT1500to2000_TuneCP5_13TeV-madgraph-pythia8.root"
 treeNum = "GenNtupler/gentree"
 
-#create_data(filename1, treeNum, 15, 'GluGluHToTauTau_Base')
-#create_data(filename2, treeNum, 15, 'ZPrimeToTauTau_Base')
-create_data(filename3, treeNum, 15, 'QCD300To500_Base')
-create_data(filename4, treeNum, 15, 'QCD1500To2000_Base')
-#create_data_decay(filename5, treeNum, 15, 'Test_Decay')
+create_data(filename1, treeNum, 10, 'GluGluHToTauTau_Base')
+create_data(filename2, treeNum, 10, 'ZPrimeToTauTau_Base')
+create_data(filename3, treeNum, 10, 'QCD300To500_Base')
+create_data(filename4, treeNum, 10, 'QCD1500To2000_Base')
 
 
