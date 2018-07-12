@@ -87,7 +87,6 @@ def simple_lstm(nclasses):
 
 	layers = [LSTM(units=80, return_sequences=True), 
 			  Flatten(),
-			  Dropout(0.1),
 			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
 
 	for layer in layers:
@@ -103,9 +102,8 @@ def simple_gru(nclasses):
 	"""
 	model = Sequential()
 
-	layers = [LSTM(units=80, return_sequences=True), 
+	layers = [GRU(units=80, return_sequences=True), 
 			  Flatten(),
-			  Dropout(0.1),
 			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
 
 	for layer in layers:

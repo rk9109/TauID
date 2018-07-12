@@ -4,6 +4,8 @@ import yaml
 import argparse
 import keras
 import numpy as np
+#seed = 42
+#numpy.random.seed(seed)
 
 def save_model(model, outfile_name):
 	"""
@@ -30,6 +32,17 @@ def get_features(options):
 	"""
 	yaml_config = parse_yaml(options.config)
 
+	# List of parameters
+	parameters = yaml_config['Inputs']
+
+	#Conv1D
+
+
+	#Conv2D
+
+
+	#Normalize Data
+
 def parse_yaml(config_file):
 	"""
 	Return: Python dictionary
@@ -52,7 +65,12 @@ if __name__ == "__main__":
 		os.mkdir(options.output)
 	
 	# Train model
+	filename = options.config.replace('.yml', '')
+
 	x_data, y_data = get_features(options) # DUMMY FUNCTION
 	model, history, _, _ =  train_model(x_data, y_data, otherparameters) # DUMMY FUNCTION
+		
+	save_model(model, options.output + '/' + filename)
+
 
 
