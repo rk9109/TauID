@@ -11,7 +11,6 @@ def one_layer_dense(input_dim, nclasses):
 	model = Sequential()
 	
 	layers = [Dense(input_dim=input_dim, units=25, kernel_initializer='random_uniform', activation='relu'), 
-			  Dense(units=10, kernel_initializer='random_uniform', activation='relu'),
 			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
 	
 	for layer in layers:
@@ -23,7 +22,24 @@ def one_layer_dense(input_dim, nclasses):
 
 def two_layer_dense(input_dim, nclasses):
 	"""
-	Two hidden layers
+	Two hidden layer
+	"""
+	model = Sequential()
+	
+	layers = [Dense(input_dim=input_dim, units=25, kernel_initializer='random_uniform', activation='relu'), 
+			  Dense(units=10, kernel_initializer='random_uniform', activation='relu'),
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
+	
+	for layer in layers:
+		model.add(layer)
+
+	model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+
+	return model
+
+def three_layer_dense(input_dim, nclasses):
+	"""
+	Three hidden layers
 	"""
 	model = Sequential()
 	

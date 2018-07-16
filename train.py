@@ -1,6 +1,7 @@
 from models import *
 #from models_plot import *
 from processdata import *
+from new_train import *
 import h5py
 
 def train(x_data, y_data, model, epochs, batch, train_split=0.5, val_split=0.25, verbose=True):
@@ -40,16 +41,16 @@ y_data = signal_file['y_data'][:]
 
 # ---- Modify Data ----
 
-parameters = ['Pt', 'Energy', 'Eta', 'Phi']
-x_data, y_data = remove_parameters(x_data, y_data, parameters, 15)
+#parameters = ['Pt', 'Energy', 'Eta', 'Phi']
+#x_data, y_data = remove_parameters(x_data, y_data, parameters, 15)
 #x_data, y_data = convert_image(x_data, y_data, 10, 15):
-x_data, y_data = remove_jet(x_data, y_data, 15)
-print(x_data.shape)
-print(y_data.shape)
+#x_data, y_data = remove_jet(x_data, y_data, 15)
 
 # ---- Fit Data ----
-model = two_layer_dense(x_data.shape[1], 1)
+model = one_layer_dense(x_data.shape[1], 1)
 model, history, _, _ = train(x_data, y_data, model, 1000, 1024)
+
+save_model(model, 'two_layer_dense') 
 
 #plot_history(history)
 #fpr, tpr, thresholds = plot_roc(model, x_data, y_data, x_back, y_back)
