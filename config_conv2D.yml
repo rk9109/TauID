@@ -1,0 +1,28 @@
+Inputs:
+    - pt     # required
+    - eta    # required
+    - phi    # required
+    - energy
+    - charge
+    - photon_ID
+    - electron_ID
+    - hadron_ID
+    - jet_pt
+
+Labels:
+    - classification
+    - jet_pt
+
+KerasModel: conv2d_model
+KerasLoss: categorical_crossentropy
+
+NormalizeInputs: 0
+InputType: image
+
+BinsX: 10
+MinX: -3.
+MaxX: 3.
+BinsY: 10
+MinY: -3.
+MaxY: 3.
+MaxParticles: 20
