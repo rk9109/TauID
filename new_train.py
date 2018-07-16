@@ -50,40 +50,91 @@ def get_features(options):
 	reference_df = pd.DataFrame(array, columns=labels)
 	labels_df = reference_df.drop_duplicates(subset='jet_pt', keep='first')
 
+	# Convert to numpy array
+	parameters_val = parameters_df.values
+	labels_val = parameters_df.values[:, :, -1]
+
 	if yaml_config['InputType'] == 'sequence':
 		print('Converting data to sequence...')
+		
+		# TODO - shuffle data + check data shapes
+
+		# Allocate space
+		parameters_seq = np.zeros((len(labels_df), yaml_config['MaxParticles'], len(features) - 1))
+
+		for i in range(len(labels_df)):
+			parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc(i)]
+			index_values = parameters_df_i.index.values
+			parameters_val_i = parameters_val [index_values, :-1]
+			
+			num_particles = len(parameters_val_i)
+			max_particles = yaml_config['MaxParticles']
+
+			if num_particles > max_particles:
+				parameters_val_i = parameters_val_i[0:max_particles, :]
+			
+			else:
+				parameters_val_i = np.concatenate(parameters_val_i, np.zeros((max_particles - num_particles,
+						                                            len(features) - 1)))
+
+			parameters_seq[i, :, :] = parameters_val_i
+
+		parameters_val = parameters_seq
 
 	elif yaml_config['InputType'] == 'image':
 		print('Converting data to image...')
 
 		BinsX = yaml_config['BinsX']
 		BinsY = yaml_config['BinsY']
-		xbins = np.linspace(yamlConfig['MinX'], yamlConfig['MaxX'], BinsX + 1)
-		ybins = np.linspace(yamlConfig['MinY'], yamlConfig['MaxY'], BinsY + 1)
-		parameters.remove('Eta'); parameters.remove('Phi')
+		xbins = np.linspace(yaml_config['MinX'], yaml_config['MaxX'], BinsX + 1)
+		ybins = np.linspace(yaml_config['MinY'], yaml_config['MaxY'], BinsY + 1)
+		parameters.remove('eta'); parameters.remove('phi')
 
 		# Allocate space
-		parameters_2D = np.zeros(len(labels_df), BinsX, BinsY, len(parameters)) 	
+		parameters_image = np.zeros((len(labels_df), BinsX, BinsY, len(parameters))) 	
 		
-		for i in range(labels_df):
-			parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc(i)]
+		for i in range(len(labels_df)):
+			parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
 			
 			eta = parameters_df_i['eta']
 			phi = parameters_df_i['phi']
+			print(eta)
 		
 			for param_idx, param in enumerate(parameters):
-				w = parameters_df_i[param] 
-				hist, _, _ = np.histogram(eta, phi, weights=w, bins=(xbins, ybins))
+				w = parameters_df_i[param]
+				hist, _, _ = np.histogram2d(eta, phi, weights=w, bins=(xbins, ybins))
 				
 				for ix in range(BinsX):
 					for iy in range(BinsY):
-						parameters_2D[i, ix, iy, param_idx] = hist[ix, iy]
+						parameters_image[i, ix, iy, param_idx] = hist[ix, iy]
 		
-		parameters_val = parameters_2D
+		parameters_val = parameters_image
+		print(parameters_val)
 		print('Done!')
 
 	elif yaml_config['InputType'] == 'dense':
 		print('Converting data to vector...')
+	
+		# TODO - shuffle data + remove jet_pt
+
+		num_particles = yaml_config['MaxParticles']
+		vec_length = num_particles * len(features)
+
+		# Allocate space
+		parameters_vec = np.zeros((len(labels_df), vec_length))
+
+		for i in range(len(labels_df)):
+			parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
+			parameters_val_i = paramters_df_i.values
+			vector = []
+
+			for idx in range(len(parameters_val_i)):
+				vector.append(parameters_df_i[i])
+
+			parameters_vec[i,:] = vector
+
+		parameters_val = parameters_image
+		print('Done!')
 
 	else:
 		raise Exception('Invalid InputType')
