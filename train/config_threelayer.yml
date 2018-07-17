@@ -11,18 +11,12 @@ Inputs:
 
 Labels:
     - classification
-    - jet_pt
+    - jet_pt # required
 
-KerasModel: conv2d_model
-KerasLoss: categorical_crossentropy
+KerasModel: threelayer_model
+KerasLoss: binary_crossentropy
 
 NormalizeInputs: 0
-InputType: image
-
-BinsX: 10
-MinX: -3.
-MaxX: 3.
-BinsY: 10
-MinY: -3.
-MaxY: 3.
-MaxParticles: 20
+InputType: dense
+MaxParticles: 10
+Shuffle: 1

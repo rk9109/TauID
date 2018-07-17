@@ -52,20 +52,18 @@ def get_features(options):
 
 	# Convert to numpy array
 	parameters_val = parameters_df.values
-	labels_val = parameters_df.values[:, :, -1]
+	labels_val = parameters_df.values[:, :-1]
 
 	if yaml_config['InputType'] == 'sequence':
 		print('Converting data to sequence...')
 		
-		# TODO - shuffle data + check data shapes
-
 		# Allocate space
 		parameters_seq = np.zeros((len(labels_df), yaml_config['MaxParticles'], len(features) - 1))
 
 		for i in range(len(labels_df)):
-			parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc(i)]
+			parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
 			index_values = parameters_df_i.index.values
-			parameters_val_i = parameters_val [index_values, :-1]
+			parameters_val_i = parameters_val[index_values, :-1]
 			
 			num_particles = len(parameters_val_i)
 			max_particles = yaml_config['MaxParticles']
@@ -74,9 +72,10 @@ def get_features(options):
 				parameters_val_i = parameters_val_i[0:max_particles, :]
 			
 			else:
-				parameters_val_i = np.concatenate(parameters_val_i, np.zeros((max_particles - num_particles,
-						                                            len(features) - 1)))
-
+				parameters_val_i = np.concatenate([parameters_val_i, np.zeros((max_particles - num_particles,
+						                                            len(features) - 1))])
+			
+			if yaml_config['Shuffle']: np.random.shuffle(parameters_val_i)
 			parameters_seq[i, :, :] = parameters_val_i
 
 		parameters_val = parameters_seq
@@ -115,21 +114,30 @@ def get_features(options):
 	elif yaml_config['InputType'] == 'dense':
 		print('Converting data to vector...')
 	
-		# TODO - shuffle data + remove jet_pt
-
-		num_particles = yaml_config['MaxParticles']
-		vec_length = num_particles * len(features)
+		max_particles = yaml_config['MaxParticles']
+		vec_length = max_particles * (len(features) - 1)
 
 		# Allocate space
 		parameters_vec = np.zeros((len(labels_df), vec_length))
 
 		for i in range(len(labels_df)):
 			parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
-			parameters_val_i = paramters_df_i.values
-			vector = []
+			index_values = parameters_df_i.index.values
+			parameters_val_i = parameters_val[index_values, :-1]
+			num_particles = len(parameters_val_i)
 
+			if num_particles > max_particles:
+				parameters_val_i = parameters_val_i[0:max_particles, :]
+			
+			else:
+				parameters_val_i = np.concatenate([parameters_val_i, np.zeros((max_particles - num_particles,
+						                                            len(features) - 1))])
+			
+			if yaml_config['Shuffle']: np.random.shuffle(parameters_val_i)
+
+			vector = []
 			for idx in range(len(parameters_val_i)):
-				vector.append(parameters_df_i[i])
+				vector.extend(parameters_val_i[idx])
 
 			parameters_vec[i,:] = vector
 
@@ -139,7 +147,8 @@ def get_features(options):
 	else:
 		raise Exception('Invalid InputType')
 
-	x_train, x_test, y_train, y_test = train_test_split(PARAMETERS)
+	# Split data into training/testing
+	x_train, x_test, y_train, y_test = train_test_split(parameters_val, labels_val, test_size=0.25, random_state=42)
 
 	#Normalize Data
 
@@ -174,6 +183,5 @@ if __name__ == "__main__":
 	model, history, _, _ =  train_model(x_data, y_data, otherparameters) # DUMMY FUNCTION
 		
 	save_model(model, options.output + '/' + filename)
-
 
 
