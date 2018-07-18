@@ -1,25 +1,8 @@
-import sys, string
 import h5py
 import argparse
 import numpy as np
+from utilities import progress
 from ROOT import *
-
-def update_progress(progress):
-	"""
-	Return: Progress Bar
-	Input: progress | Fraction completed from 0->1
-	"""
-	barLength = 20
-	status = ''
-
-	if (progress >= 1):
-		progress = 1
-		status = "Done...\r\n"
-
-	block = int(round(barLength*progress))
-	text = '\rPercent: [{0}] {1}% {2}'.format('#'*block + '-'*(barLength - block), progress*100, status)
-	sys.stdout.write(text)
-	sys.stdout.flush()
 
 def convert_data(tree):
 	"""
@@ -81,7 +64,7 @@ def convert_data(tree):
 					particle_num += 1
 
 		event_num += 1.
-		update_progress(event_num/total_num)
+		progress.update_progress(event_num/total_num)
 
 	fields =[('pt','f8'), ('eta','f8'), ('phi','f8'), ('energy','f8'), ('charge','i4'),
 			 ('photon_ID','i4'), ('electron_ID','i4'), ('hadron_ID','i4'),
