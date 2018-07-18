@@ -1,16 +1,21 @@
 import sys, os
-import h5py
-import yaml
 import argparse
+import yaml
+import h5py
 import keras
-import numpy as np
-import pandas as pd
 from models import models
 from features import get_features
-from sklearn.preprocessing import *
-from sklearn.model_selection import train_test_split
 #seed = 42
 #numpy.random.seed(seed)
+
+def parse_yaml(config_file):
+	"""
+	Return: Python dictionary
+	Input: config_file | .yml configuration file
+	"""
+	print('Loading configuration from ' + str(config_file) + '...')
+	config = open(config_file, 'r')
+	return yaml.load(config)
 
 def save_model(model, outfile_name):
 	"""
@@ -28,6 +33,32 @@ def save_model(model, outfile_name):
 	print('Saved model')
 
 	return None
+
+def save_data(filename, x_train, x_test, y_train, y_test):
+	"""
+	Save generated data
+	"""
+	print('Saving data...')
+	h5File = h5py.File(filename + '.hdf5','w')
+	h5File.create_dataset('x_train', data=x_train,  compression='lzf')
+	h5File.create_dataset('x_test', data=x_test, compression='lzf')	
+	h5File.create_dataset('y_train', data=y_train,  compression='lzf')
+	h5File.create_dataset('y_test', data=y_test, compression='lzf')
+	h5File.close()
+	del h5File
+
+	return None
+
+def get_data(filename):
+	"""
+	Reload generated data
+	"""
+	print('Reloading data...')
+	h5File = h5py.File(filename)
+ 	x_train = h5File['x_train']; x_test = h5File['x_test']
+	y_train = h5File['y_train']; y_test = h5File['y_test']
+	
+	return x_train, x_test, y_train, y_test
 
 def train_model(x_train, y_train, x_test, y_test, model, epochs, batch, val_split=0.25, verbose=True):
 	"""
@@ -47,26 +78,42 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-i', '--input', dest='Input', help='input ROOT file')
 	parser.add_argument('-t', '--tree', dest='tree', default='GenNtupler/gentree', help='input ROOT tree')
-	parser.add_argument('-o', '--output', dest='output', default='saved-models/', help='output directory')
+	parser.add_argument('-o', '--output', dest='output', default='saved-models/', help='models output directory')	
+ 	parser.add_argument('-s', '--save', dest='save', nargs='?', const='saved-data/', help='data output directory')
+	parser.add_argument('-l', '--load', dest='load', help='load filename')
 	parser.add_argument('-c', '--config', dest='config', help='configuration file')
- 	options = parser.parse_args()
+	options = parser.parse_args()
 
 	# Check output directory
 	if not os.path.isdir(options.output):
-		print('Specified directory not found. Creating new directory...')
+		print('Specified output directory not found. Creating new directory...')
 		os.mkdir(options.output)
 	
+	if (options.save):
+		if not os.path.isdir(options.save):
+			print('Specified save directory not found. Creating new dirctory...')
+			os.mkdir(options.save)
+
+	# Get data	
+	if (options.load):
+		filename = options.load.replace('saved-data/', '')
+		x_train, x_test, y_train, y_test = get_data(options.load)
+	
+	elif (options.config):
+		filename = options.config.replace('.yml', '')
+		yaml_config = parse_yaml(options.config)
+		
+		x_train, x_test, y_train, y_test = get_features(options, yaml_config) # generate data
+	
+		if (options.save):
+			save_data(filename, x_train, x_test, y_train, y_test) 
+	else:
+		raise Exception('Load/Config file not specified.')
+
 	# Train model
-	filename = options.config.replace('.yml', '')
+	gen_model = getattr(models, yaml_config['KerasModel'])
+	model = gen_model(x_train.shape[1:], 1, yaml_config['KerasLoss'])
+	model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 1024)
 
-	# gen_model = getattr(models, yaml_config['KerasModel'])
-
-	x_train, x_test, y_train, y_test = get_features(options) # generate data
-	print(x_train)
-	print(y_train)
-
-	# model = gen_model(x_train.shape, 1, yaml_config['Loss'])
-	# model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 1024)
-
-	# save_model(model, options.output + '/' + filename)
+	save_model(model, options.output + '/' + filename)
 	

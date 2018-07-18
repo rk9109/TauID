@@ -1,22 +1,18 @@
 import h5py
-import yaml
 import numpy as np
 import pandas as pd
 from utilities import progress
+from sklearn.preprocessing import *
+from sklearn.model_selection import train_test_split
+#seed = 42
+#numpy.random.seed(seed)
 
-def parse_yaml(config_file):
-	"""
-	Return: Python dictionary
-	Input: config_file | .yml configuration file
-	"""
-	print('Loading configuration from ' + str(config_file) + '...')
-	config = open(config_file, 'r')
-	return yaml.load(config)
-
-def convert_sequence(yaml_config, parameters_df, labels_df, parameters_val, labels_val): 
+def convert_sequence(yaml_config, parameters, labels,  parameters_df, labels_df, parameters_val, labels_val): 
 	"""
 	Return: Numpy array (Events, Particles, Features)
 	Input: yaml_config    | Dictionary of config options
+		   parameters     | List of parameters
+		   labels         | List of labels
 	       parameters_df  | Parameters dataframe
 		   labels_df      | Labels dataframe
 		   parameters_val | Parameters array
@@ -26,6 +22,9 @@ def convert_sequence(yaml_config, parameters_df, labels_df, parameters_val, labe
 
 	# Allocate space
 	parameters_seq = np.zeros((len(labels_df), yaml_config['MaxParticles'], len(parameters) - 1))
+	
+	# Progress
+	event_num = 0. ; total_num = len(labels_df)
 
 	for i in range(len(labels_df)):
 		parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
@@ -44,16 +43,20 @@ def convert_sequence(yaml_config, parameters_df, labels_df, parameters_val, labe
 	
 		if yaml_config['Shuffle']: np.random.shuffle(parameters_val_i)
 		parameters_seq[i, :, :] = parameters_val_i
-
+		
+		event_num += 1.
+		progress.update_progress(event_num/total_num)
+	
 	parameters_val = parameters_seq
-	print('Done!')
 
 	return parameters_val, labels_val
 
-def convert_image(yaml_config, parameters_df, labels_df, parameters_val, labels_val):
+def convert_image(yaml_config, parameters, labels, parameters_df, labels_df, parameters_val, labels_val):
 	"""
 	Return: Numpy array (Events, Eta, Phi, Features)
 	Input: yaml_config    | Dictionary of config options
+		   parameters     | List of parameters
+		   labels         | List of labels
 	       parameters_df  | Parameters dataframe
 		   labels_df      | Labels dataframe
 		   parameters_val | Parameters array
@@ -70,7 +73,10 @@ def convert_image(yaml_config, parameters_df, labels_df, parameters_val, labels_
 		
 	# Allocate space
 	parameters_image = np.zeros((len(labels_df), BinsX, BinsY, len(parameters))) 	
-		
+
+	# Progress
+	event_num = 0. ; total_num = len(labels_df)
+
 	for i in range(len(labels_df)):
 		parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
 			
@@ -86,16 +92,20 @@ def convert_image(yaml_config, parameters_df, labels_df, parameters_val, labels_
 			for ix in range(BinsX):
 				for iy in range(BinsY):
 					parameters_image[i, ix, iy, param_idx] = hist[ix, iy]
-		
+
+		event_num += 1.
+		progress.update_progress(event_num/total_num)
+
 	parameters_val = parameters_image
-	print('Done!')
 
 	return parameters_val, labels_val
 
-def convert_vector(yaml_config, parameters_df, labels_df, parameters_val, labels_val):
+def convert_vector(yaml_config, parameters, labels, parameters_df, labels_df, parameters_val, labels_val):
 	"""
 	Return: Numpy array (Events, Features)
 	Input: yaml_config    | Dictionary of config options
+		   parameters     | List of parameters
+		   labels         | List of labels
 	       parameters_df  | Parameters dataframe
 		   labels_df      | Labels dataframe
 		   parameters_val | Parameters array
@@ -108,6 +118,9 @@ def convert_vector(yaml_config, parameters_df, labels_df, parameters_val, labels
 
 	# Allocate space
 	parameters_vec = np.zeros((len(labels_df), vec_length))
+
+	# Progress
+	event_num = 0. ; total_num = len(labels_df)
 
 	for i in range(len(labels_df)):
 		parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
@@ -129,13 +142,15 @@ def convert_vector(yaml_config, parameters_df, labels_df, parameters_val, labels
 			vector.extend(parameters_val_i[idx])
 
 		parameters_vec[i,:] = vector
-
-	parameters_val = parameters_image
-	print('Done!')
+			
+		event_num += 1.
+		progress.update_progress(event_num/total_num)
+	
+	parameters_val = parameters_vec
 
 	return parameters_val, labels_val
 
-def normalize(yaml_config, x_train, x_test)
+def normalize(yaml_config, x_train, x_test):
 	"""
 	Return: Scaled x_train, x_test
 	Input: yaml_config | Dictionary of config options
@@ -144,12 +159,18 @@ def normalize(yaml_config, x_train, x_test)
 	"""
 	if (yaml_config['NormalizeInputs'] and yaml_config['InputType'] == 'dense'):
 		print('Normalizing data...')
-	
-		# SCALE THIS DATA PROPERLY
+		
+		subarrays = []
+		size = x_train.shape[1]
+		features = size/yaml_config['MaxParticles']
+		for i in range(0, size, features):
+			subarrays.append(x_train[:,i:i+features])
 
-		scaler = StandardScaler().fit(x_train)
-		x_train = scaler.transform(x_train)
-		x_test = scaler.transform(x_test)
+		scaler = StandardScaler().fit(np.concatenate(subarrays))
+				
+		for i in range(0, size, features):
+			x_train[:,i:i+features] = scaler.transform(x_train[:,i:i+features])
+			x_test[:,i:i+features] = scaler.transform(x_test[:,i:i+features])
 
 	if (yaml_config['NormalizeInputs'] and yaml_config['InputType'] == 'sequence'):
 		print('Normalizing data...')
@@ -168,17 +189,16 @@ def normalize(yaml_config, x_train, x_test)
 
 	return x_train, x_test
 
-def get_features(options):
+def get_features(options, yaml_config):
 	"""
 	Return: x_train, y_train, x_test, y_test
-	Input: options | Arguments object
+	Input: options     | Arguments object
+		   yaml_config | Dictionary of config options 
 	"""	
 	h5File = h5py.File(options.Input)
  	array = h5File[options.tree][()]
 	print(array.shape)
 	print(array.dtype.names)
-
-	yaml_config = parse_yaml(options.config)
 
 	# List of parameters
 	parameters = yaml_config['Inputs']
@@ -194,14 +214,16 @@ def get_features(options):
 	labels_val = labels_df.values[:, :-1]
 
 	if yaml_config['InputType'] == 'sequence':
-		parameters_val, labels_val = convert_sequence(yaml_config, parameters_df, labels_df, parameters_val, labels_val)
+		parameters_val, labels_val = convert_sequence(yaml_config, parameters, labels, 
+						                              parameters_df, labels_df, parameters_val, labels_val)
 
 	elif yaml_config['InputType'] == 'image':
-		parameters_val, labels_val = convert_image(yaml_config, parameters_df, labels_df, parameters_val, labels_val)
+		parameters_val, labels_val = convert_image(yaml_config, parameters, labels, 
+						                           parameters_df, labels_df, parameters_val, labels_val)
 
 	elif yaml_config['InputType'] == 'dense':
-		parameters_val, labels_val = convert_vector(yaml_config, parameters_df, labels_df, parameters_val, labels_val)
-
+		parameters_val, labels_val = convert_vector(yaml_config, parameters, labels, 
+					                                parameters_df, labels_df, parameters_val, labels_val)
 	else:
 		raise Exception('Invalid InputType')
 
