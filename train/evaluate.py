@@ -1,7 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_curve
-from processdata import *
 
 def plot_history(history, name=None, save=False):
 	"""

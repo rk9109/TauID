@@ -1,3 +1,7 @@
+/train/saved-data
+/train/saved-models
+/train/saved-plots
+
 *.pyc
 *.swp
 *.png

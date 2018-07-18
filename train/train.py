@@ -3,6 +3,7 @@ import argparse
 import yaml
 import h5py
 import keras
+from keras.callbacks import *
 from models import models
 from features import get_features
 #seed = 42
@@ -79,7 +80,7 @@ if __name__ == "__main__":
 	parser.add_argument('-i', '--input', dest='Input', help='input ROOT file')
 	parser.add_argument('-t', '--tree', dest='tree', default='GenNtupler/gentree', help='input ROOT tree')
 	parser.add_argument('-o', '--output', dest='output', default='saved-models/', help='models output directory')	
- 	parser.add_argument('-s', '--save', dest='save', nargs='?', const='saved-data/', help='data output directory')
+ 	parser.add_argument('-s', '--save', dest='save', default='saved-data/', help='data output directory')
 	parser.add_argument('-l', '--load', dest='load', help='load filename')
 	parser.add_argument('-c', '--config', dest='config', help='configuration file')
 	options = parser.parse_args()
@@ -89,31 +90,28 @@ if __name__ == "__main__":
 		print('Specified output directory not found. Creating new directory...')
 		os.mkdir(options.output)
 	
-	if (options.save):
-		if not os.path.isdir(options.save):
-			print('Specified save directory not found. Creating new dirctory...')
-			os.mkdir(options.save)
+	if not os.path.isdir(options.save):
+		print('Specified save directory not found. Creating new dirctory...')
+		os.mkdir(options.save)
 
-	# Get data	
+	# Get data
+	filename = options.config.replace('.yml', '')
+	yaml_config = parse_yaml(options.config)	
+	
 	if (options.load):
-		filename = options.load.replace('saved-data/', '')
 		x_train, x_test, y_train, y_test = get_data(options.load)
 	
 	elif (options.config):
-		filename = options.config.replace('.yml', '')
-		yaml_config = parse_yaml(options.config)
-		
 		x_train, x_test, y_train, y_test = get_features(options, yaml_config) # generate data
+		save_data(options.save + filename, x_train, x_test, y_train, y_test) 
 	
-		if (options.save):
-			save_data(filename, x_train, x_test, y_train, y_test) 
 	else:
 		raise Exception('Load/Config file not specified.')
 
 	# Train model
 	gen_model = getattr(models, yaml_config['KerasModel'])
-	model = gen_model(x_train.shape[1:], 1, yaml_config['KerasLoss'])
+	model = gen_model(x_train.shape[1], 1, yaml_config['KerasLoss'])
 	model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 1024)
 
 	save_model(model, options.output + '/' + filename)
-	
+
