@@ -1,13 +1,13 @@
 Inputs:
-    - pt     # required
-    - eta    # required
-    - phi    # required
+    - pt
+    - eta    
+    - phi    
     - energy
     - charge
     - photon_ID
     - electron_ID
     - hadron_ID
-    - jet_pt
+    - jet_pt # required
 
 Labels:
     - classification

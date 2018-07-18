@@ -1,20 +1,40 @@
-from models import *
-#from models_plot import *
-from processdata import *
-from new_train import *
+import sys, os
 import h5py
+import yaml
+import argparse
+import keras
+import numpy as np
+import pandas as pd
+from models import models
+from features import get_features
+from sklearn.preprocessing import *
+from sklearn.model_selection import train_test_split
+#seed = 42
+#numpy.random.seed(seed)
 
-def train(x_data, y_data, model, epochs, batch, train_split=0.5, val_split=0.25, verbose=True):
+def save_model(model, outfile_name):
+	"""
+	Return: None
+	Input: model    | Keras model
+		   filename | Filename for output
+	"""
+	model_yaml = model.to_yaml()
+	with open(outfile_name + '.yaml', 'w') as yaml_file:
+		yaml_file.write(model_yaml)
+	model_json = model.to_json()
+	with open(outfile_name + '.json', 'w') as json_file:
+		json_file.write(model_json)
+	model.save_weights(outfile_name + '.h5')
+	print('Saved model')
+
+	return None
+
+def train_model(x_train, y_train, x_test, y_test, model, epochs, batch, val_split=0.25, verbose=True):
 	"""
 	Train model
 	"""
-	# Split data
-	split = int(x_data.shape[0]//(1/train_split))
-	x_test, x_train = x_data[:split, :], x_data[split:, :]
-	y_test, y_train = y_data[:split], y_data[split:]
-
 	# Fit model
-	early_stopping = EarlyStopping(monitor='val_loss', patience=10)
+	early_stopping = EarlyStopping(monitor='val_loss', patience=100)
 	history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch, 
 					    callbacks=[early_stopping], validation_split=val_split, verbose=verbose)
 
@@ -23,37 +43,30 @@ def train(x_data, y_data, model, epochs, batch, train_split=0.5, val_split=0.25,
 	
 	return model, history, test_loss, test_acc
 
-# ---- Copy Data ----
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-i', '--input', dest='Input', help='input ROOT file')
+	parser.add_argument('-t', '--tree', dest='tree', default='GenNtupler/gentree', help='input ROOT tree')
+	parser.add_argument('-o', '--output', dest='output', default='saved-models/', help='output directory')
+	parser.add_argument('-c', '--config', dest='config', help='configuration file')
+ 	options = parser.parse_args()
 
-print('Copying files...')
+	# Check output directory
+	if not os.path.isdir(options.output):
+		print('Specified directory not found. Creating new directory...')
+		os.mkdir(options.output)
+	
+	# Train model
+	filename = options.config.replace('.yml', '')
 
-filename1 = '/data/t3home000/rinik/GluGluHToTauTau_Base.hdf5'
-filename2 = ''
-filename3 = '/data/t3home000/rinik/QCD300To500_Base.hdf5'
-filename4 = ''
+	# gen_model = getattr(models, yaml_config['KerasModel'])
 
-signal_file = h5py.File(filename1, 'r')
-background_file = h5py.File(filename3, 'r')
-x_data = signal_file['x_data'][:] 
-y_data = signal_file['y_data'][:]
-#x_back = background_file['x_data'][:]
-#y_back = background_file['y_data'][:]
+	x_train, x_test, y_train, y_test = get_features(options) # generate data
+	print(x_train)
+	print(y_train)
 
-# ---- Modify Data ----
+	# model = gen_model(x_train.shape, 1, yaml_config['Loss'])
+	# model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 1024)
 
-#parameters = ['Pt', 'Energy', 'Eta', 'Phi']
-#x_data, y_data = remove_parameters(x_data, y_data, parameters, 15)
-#x_data, y_data = convert_image(x_data, y_data, 10, 15):
-#x_data, y_data = remove_jet(x_data, y_data, 15)
-
-# ---- Fit Data ----
-model = one_layer_dense(x_data.shape[1], 1)
-model, history, _, _ = train(x_data, y_data, model, 1000, 1024)
-
-save_model(model, 'two_layer_dense') 
-
-#plot_history(history)
-#fpr, tpr, thresholds = plot_roc(model, x_data, y_data, x_back, y_back)
-#loose_cut, medium_cut, tight_cut = get_workingpoints(fpr, tpr, thresholds)
-
-
+	# save_model(model, options.output + '/' + filename)
+	

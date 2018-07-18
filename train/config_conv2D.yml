@@ -1,17 +1,19 @@
 Inputs:
-    - pt     # required
-    - eta    # required
-    - phi    # required
+    - pt      # required
+    - eta     # required
+    - phi     # required
     - energy
     - charge
     - photon_ID
     - electron_ID
     - hadron_ID
-    - jet_pt
+    - jet_pt  # required
+    - jet_eta # required
+    - jet_phi # required
 
 Labels:
     - classification
-    - jet_pt # required
+    - jet_pt  # required
 
 KerasModel: conv2d_model
 KerasLoss: binary_crossentropy
@@ -20,9 +22,8 @@ NormalizeInputs: 0
 InputType: image
 
 BinsX: 10
-MinX: -3.
-MaxX: 3.
+MinX: -0.25
+MaxX: 0.25
 BinsY: 10
-MinY: -3.
-MaxY: 3.
-MaxParticles: 20
+MinY: -0.25
+MaxY: 0.25
