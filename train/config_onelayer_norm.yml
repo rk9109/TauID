@@ -16,9 +16,9 @@ Labels:
 KerasModel: onelayer_model
 KerasLoss: binary_crossentropy
 
-NormalizeInputs: 0
+NormalizeInputs: 1
 InputType: dense
 MaxParticles: 10
 Shuffle: 1
 
-Filename: onelayer_base
+Filename: onelayer_norm_base

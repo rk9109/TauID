@@ -1,5 +1,5 @@
 Inputs:
-    - pt
+    - pt     
     - eta    
     - phi    
     - energy
@@ -13,12 +13,12 @@ Labels:
     - classification
     - jet_pt # required
 
-KerasModel: onelayer_model
+KerasModel: threelayer_model
 KerasLoss: binary_crossentropy
 
-NormalizeInputs: 0
+NormalizeInputs: 1
 InputType: dense
 MaxParticles: 10
 Shuffle: 1
 
-Filename: onelayer_base
+Filename: threelayer_norm_base

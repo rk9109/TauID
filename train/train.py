@@ -1,6 +1,7 @@
 import sys, os
 import argparse
 import yaml
+import json
 import h5py
 import keras
 from keras.callbacks import *
@@ -18,10 +19,11 @@ def parse_yaml(config_file):
 	config = open(config_file, 'r')
 	return yaml.load(config)
 
-def save_model(model, outfile_name):
+def save_model(model, history, outfile_name):
 	"""
 	Return: None
 	Input: model    | Keras model
+		   history  | Loss history
 		   filename | Filename for output
 	"""
 	model_yaml = model.to_yaml()
@@ -30,7 +32,12 @@ def save_model(model, outfile_name):
 	model_json = model.to_json()
 	with open(outfile_name + '.json', 'w') as json_file:
 		json_file.write(model_json)
-	model.save_weights(outfile_name + '.h5')
+	with open(outfile_name + '_history.json', 'w') as json_history_file:
+		history_dict = history.history
+		json.dump(history_dict, json_history_file)
+	
+	model.save_weights(outfile_name + '_weights.h5')
+	model.save(outfile_name + '.h5')
 	print('Saved model')
 
 	return None
@@ -77,7 +84,8 @@ def train_model(x_train, y_train, x_test, y_test, model, epochs, batch, val_spli
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-i', '--input', dest='Input', help='input ROOT file')
+	parser.add_argument('-i', '--signal', dest='signal', help='input ROOT signal file')
+	parser.add_argument('-b', '--back', dest='background', help='input ROOT background file')
 	parser.add_argument('-t', '--tree', dest='tree', default='GenNtupler/gentree', help='input ROOT tree')
 	parser.add_argument('-o', '--output', dest='output', default='saved-models/', help='models output directory')	
  	parser.add_argument('-s', '--save', dest='save', default='saved-data/', help='data output directory')
@@ -95,16 +103,19 @@ if __name__ == "__main__":
 		os.mkdir(options.save)
 
 	# Get data
-	filename = options.config.replace('.yml', '')
 	yaml_config = parse_yaml(options.config)	
-	
+	filename = yaml_config['Filename']
+
 	if (options.load):
 		x_train, x_test, y_train, y_test = get_data(options.load)
 	
 	elif (options.config):
 		x_train, x_test, y_train, y_test = get_features(options, yaml_config) # generate data
 		save_data(options.save + filename, x_train, x_test, y_train, y_test) 
-	
+
+		xb_train, xb_test, yb_train, yb_test = get_features(options, yaml_config, background=True)
+		save_data(options.save + filename + '_background', xb_train, xb_test, yb_train, yb_test)
+
 	else:
 		raise Exception('Load/Config file not specified.')
 
@@ -112,6 +123,5 @@ if __name__ == "__main__":
 	gen_model = getattr(models, yaml_config['KerasModel'])
 	model = gen_model(x_train.shape[1], 1, yaml_config['KerasLoss'])
 	model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 1024)
-
-	save_model(model, options.output + '/' + filename)
-
+	
+	save_model(model, history, options.output + '/' + filename)	

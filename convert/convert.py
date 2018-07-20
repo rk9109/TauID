@@ -4,13 +4,14 @@ import numpy as np
 from utilities import progress
 from ROOT import *
 
-def convert_data(tree):
+def convert_data(tree, number=None):
 	"""
 	docstring
 	"""
 	event_num = 0.
 	particle_num = 0
-	total_num = tree.GetEntries()
+	if number: total_num = number
+	else: total_num = tree.GetEntries()
 
 	# Parameter lists
 	pt = []
@@ -23,6 +24,7 @@ def convert_data(tree):
 	classification = []
 
 	for event in tree:
+		if event_num == total_num: break
 		for jet_num, jet_id in enumerate(event.genjetid):  # iterate through jet
 			for k, _ in enumerate(event.genindex):         # iterate through jet particles
 				if (event.genindex[k] == jet_num):
@@ -84,9 +86,15 @@ def convert_data(tree):
 
 	return data
 
+def create_regression_data():
+	"""
+	4-vec prediction
+	"""
+
 if __name__ == "__main__":	
 	parser = argparse.ArgumentParser()
 	parser.add_argument('filename', help='ROOT filename')
+	parser.add_argument('-n', '--number', dest='number', default=0, help='number of events')
 	parser.add_argument('-t', '--tree', dest='tree', default='GenNtupler/gentree', help='tree name')
  	options = parser.parse_args()
 	
@@ -96,11 +104,10 @@ if __name__ == "__main__":
 	# Convert TTree to numpy structured array
 	rf = TFile(filename)              # open file
 	tree = rf.Get(options.tree)       # get TTree
-	arr = convert_data(tree)
+	arr = convert_data(tree, int(options.number))
 	
 	h5File = h5py.File(filename.replace('.root','.z'),'w')
 	h5File.create_dataset(options.tree, data=arr,  compression='lzf')
 	h5File.close()
 	del h5File
-
 

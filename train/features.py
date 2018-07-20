@@ -189,17 +189,17 @@ def normalize(yaml_config, x_train, x_test):
 
 	return x_train, x_test
 
-def get_features(options, yaml_config):
+def get_features(options, yaml_config, background=False):
 	"""
 	Return: x_train, y_train, x_test, y_test
 	Input: options     | Arguments object
-		   yaml_config | Dictionary of config options 
+		   yaml_config | Dictionary of config options
+		   background  | Background file [True/False]
 	"""	
-	h5File = h5py.File(options.Input)
+	if background:h5File = h5py.File(options.background)
+	else: h5File = h5py.File(options.signal)
  	array = h5File[options.tree][()]
-	print(array.shape)
-	print(array.dtype.names)
-
+	
 	# List of parameters
 	parameters = yaml_config['Inputs']
 	labels = yaml_config['Labels']

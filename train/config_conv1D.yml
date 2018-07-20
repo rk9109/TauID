@@ -20,3 +20,5 @@ NormalizeInputs: 0
 InputType: sequence
 MaxParticles: 10
 Shuffle: 1
+
+Filename: conv1D_base 
