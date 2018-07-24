@@ -55,13 +55,13 @@ def threelayer_model(input_dim, nclasses, loss):
 
 	return model
 
-def conv1D_model(input_dim, nclasses, loss):
+def conv1d_model(input_shape, nclasses, loss):
 	"""
 	Three convolutional layers
 	"""
 	model = Sequential()
 
-	layers = [Conv1D(input_dim=input_dim, filters=8, kernel_size=8, strides=1, padding='same', 
+	layers = [Conv1D(input_shape=input_shape, filters=8, kernel_size=8, strides=1, padding='same', 
 			         kernel_initializer='he_normal', use_bias=True, activation='relu'),
 			  Conv1D(filters=4, kernel_size=8, strides=2, padding='same', kernel_initializer='he_normal', 
 					 use_bias=True, activation='relu'),
@@ -78,13 +78,13 @@ def conv1D_model(input_dim, nclasses, loss):
 
 	return model
 
-def conv2D_model(input_dim, nclasses, loss): 
+def conv2d_model(input_shape, nclasses, loss): 
 	"""
 	Three convolutional layers
 	"""
 	model = Sequential()
 
-	layers = [Conv2D(input_dim=input_dim, filters=8, kernel_size=(10,10), strides=(1,1), padding='same', 
+	layers = [Conv2D(input_shape=input_shape, filters=8, kernel_size=(10,10), strides=(1,1), padding='same', 
 			         kernel_initializer='he_normal', use_bias=True, activation='relu'),
 			  Conv2D(filters=8, kernel_size=(10,10), strides=(1,1), padding='same', kernel_initializer='he_normal', 
 					 use_bias=True, activation='relu'),
@@ -101,13 +101,13 @@ def conv2D_model(input_dim, nclasses, loss):
 
 	return model
 
-def lstm_model(input_dim, nclasses, loss):
+def lstm_model(input_shape, nclasses, loss):
 	"""
 	Simple LSTM
 	"""
 	model = Sequential()
 
-	layers = [LSTM(input_dim=input_dim, units=80, return_sequences=True), 
+	layers = [LSTM(input_shape=input_shape, units=80, return_sequences=True), 
 			  Flatten(),
 			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
 
@@ -118,13 +118,13 @@ def lstm_model(input_dim, nclasses, loss):
 
 	return model
 
-def gru_model(input_dim, nclasses, loss):
+def gru_model(input_shape, nclasses, loss):
 	"""
 	Simple GRU
 	"""
 	model = Sequential()
 
-	layers = [GRU(input_dim, units=80, return_sequences=True), 
+	layers = [GRU(input_shape=input_shape, units=80, return_sequences=True), 
 			  Flatten(),
 			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
 

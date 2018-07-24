@@ -121,7 +121,16 @@ if __name__ == "__main__":
 
 	# Train model
 	gen_model = getattr(models, yaml_config['KerasModel'])
-	model = gen_model(x_train.shape[1], 1, yaml_config['KerasLoss'])
+	
+	if yaml_config['InputType'] == 'dense':
+		model = gen_model(x_train.shape[1], 1, yaml_config['KerasLoss'])
+	
+	if yaml_config['InputType'] == 'image':
+		model = gen_model(x_train.shape[1:], 1, yaml_config['KerasLoss'])
+	
+	if yaml_config['InputType'] == 'sequence':
+		model = gen_model(x_train.shape[1:], 1, yaml_config['KerasLoss'])
+
 	model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 1024)
 	
 	save_model(model, history, options.output + '/' + filename)	

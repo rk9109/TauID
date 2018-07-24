@@ -33,22 +33,24 @@ def plot_history(history, name):
 	
 	return None
 
-def remove_background(x_test, y_test):
+def include_background(x_test, y_test, x_back, y_back):
 	"""
 	Remove background
 	"""
 	indices = np.where(y_test == 0)[0]
 	x_test = np.delete(x_test, indices, axis=0)
 	y_test = np.delete(y_test, indices, axis=0)
-	return x_test, y_test
+
+	x_data = np.concatenate((x_test, x_back), axis=0)
+	y_data = np.concatenate((y_test, y_back), axis=0)
+	
+	return x_data, y_data
 
 def plot_roc(model, x_test, y_test, x_back, y_back, name):
 	"""
 	Return ROC curve
 	"""	
-	x_test, y_test = remove_background(x_test, y_test)
-	x_data = np.concatenate((x_test, x_back), axis=0)
-	y_data = np.concatenate((y_test, y_back), axis=0)
+	x_data, y_data = remove_background(x_test, y_test, x_back, y_back)
 
 	y_pred = model.predict(x_data).ravel()
 	fpr, tpr, thresholds = roc_curve(y_data, y_pred)
@@ -93,11 +95,13 @@ def plot_efficiency(model, x_test, y_test, wp):
 	Plot Efficiency vs. Pt/Eta for working point
 	"""
 	raise Exception('Efficiency plot not implemented')
-
-	for jet in x_test:
+	
+	x_data, y_data = remove_background(x_test, y_test, x_back, y_back)
+	
+	for idx, jet in enumerate(x_data):
 		prob = model.predict(jet)
-		if (prob > wp and (ISTAU)): signal[Pt] += 1
-		if (prob < wp and (NOTTAU)): background[Pt] += 1
+		if (prob > wp and y_data[idx] == 1): signal[Pt] += 1
+		if (prob < wp and y_data[idx] == 0): background[Pt] += 1
 		total[Pt] += 1
 	
 	hist_signal, bins_signal = np.hist(parameters)
