@@ -1,0 +1,24 @@
+Inputs:
+    - pt    
+    - eta    
+    - phi    
+    - energy
+    - charge
+    - photon_ID
+    - electron_ID
+    - hadron_ID
+    - jet_pt # required
+
+Labels:
+    - classification
+    - jet_pt # required
+
+KerasModel: conv1d_model
+KerasLoss: binary_crossentropy
+
+NormalizeInputs: 1
+InputType: sequence
+MaxParticles: 10
+Shuffle: 1
+
+Filename: conv1D_norm_base 

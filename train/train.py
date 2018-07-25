@@ -4,6 +4,7 @@ import yaml
 import json
 import h5py
 import keras
+import numpy as np
 from keras.callbacks import *
 from models import models
 from features import get_features
@@ -19,13 +20,16 @@ def parse_yaml(config_file):
 	config = open(config_file, 'r')
 	return yaml.load(config)
 
-def save_model(model, history, outfile_name):
+def save_model(model, history, output, filename):
 	"""
 	Return: None
 	Input: model    | Keras model
 		   history  | Loss history
 		   filename | Filename for output
 	"""
+	os.mkdir(output + filename)
+	outfile_name = output + filename + '/' + filename
+
 	model_yaml = model.to_yaml()
 	with open(outfile_name + '.yaml', 'w') as yaml_file:
 		yaml_file.write(model_yaml)
@@ -84,25 +88,26 @@ def train_model(x_train, y_train, x_test, y_test, model, epochs, batch, val_spli
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-i', '--signal', dest='signal', help='input ROOT signal file')
+	parser.add_argument('-s', '--signal', dest='signal', help='input ROOT signal file')
 	parser.add_argument('-b', '--back', dest='background', help='input ROOT background file')
 	parser.add_argument('-t', '--tree', dest='tree', default='GenNtupler/gentree', help='input ROOT tree')
-	parser.add_argument('-o', '--output', dest='output', default='saved-models/', help='models output directory')	
- 	parser.add_argument('-s', '--save', dest='save', default='saved-data/', help='data output directory')
-	parser.add_argument('-l', '--load', dest='load', help='load filename')
+	parser.add_argument('-l', '--load', dest='load', help='load data file')
 	parser.add_argument('-c', '--config', dest='config', help='configuration file')
 	options = parser.parse_args()
 
 	# Check output directory
-	if not os.path.isdir(options.output):
-		print('Specified output directory not found. Creating new directory...')
-		os.mkdir(options.output)
+	output_models = 'saved-models/'
+	output_data = 'saved-data/'
 	
-	if not os.path.isdir(options.save):
+	if not os.path.isdir(output_models):
+		print('Specified output directory not found. Creating new directory...')
+		os.mkdir(output_models)
+	
+	if not os.path.isdir(output_data):
 		print('Specified save directory not found. Creating new dirctory...')
-		os.mkdir(options.save)
+		os.mkdir(output_data)
 
-	# Get data
+	# Generate data
 	yaml_config = parse_yaml(options.config)	
 	filename = yaml_config['Filename']
 
@@ -110,11 +115,8 @@ if __name__ == "__main__":
 		x_train, x_test, y_train, y_test = get_data(options.load)
 	
 	elif (options.config):
-		x_train, x_test, y_train, y_test = get_features(options, yaml_config) # generate data
-		save_data(options.save + filename, x_train, x_test, y_train, y_test) 
-
-		xb_train, xb_test, yb_train, yb_test = get_features(options, yaml_config, background=True)
-		save_data(options.save + filename + '_background', xb_train, xb_test, yb_train, yb_test)
+		x_train, x_test, y_train, y_test = get_features(options, yaml_config)
+		save_data(output_data + filename, x_train, x_test, y_train, y_test)
 
 	else:
 		raise Exception('Load/Config file not specified.')
@@ -133,4 +135,4 @@ if __name__ == "__main__":
 
 	model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 1024)
 	
-	save_model(model, history, options.output + '/' + filename)	
+	save_model(model, history, output_models, filename)	

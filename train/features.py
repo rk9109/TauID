@@ -176,7 +176,7 @@ def normalize(yaml_config, x_train, x_test):
 		print('Normalizing data...')
 		
 		x_train_reshape = x_train.reshape(x_train.shape[0]*x_train.shape[1], x_train.shape[2])
-		scaler = StandardScaler().fit(x_train)
+		scaler = StandardScaler().fit(x_train_reshape)
 		
 		for part in range(x_train.shape[1]):
 			x_train[:, part, :] = scaler.transform(x_train[:, part, :])
@@ -189,16 +189,20 @@ def normalize(yaml_config, x_train, x_test):
 
 	return x_train, x_test
 
-def get_features(options, yaml_config, background=False):
+def get_features(options, yaml_config):
 	"""
 	Return: x_train, y_train, x_test, y_test
 	Input: options     | Arguments object
 		   yaml_config | Dictionary of config options
-		   background  | Background file [True/False]
 	"""	
-	if background:h5File = h5py.File(options.background)
-	else: h5File = h5py.File(options.signal)
- 	array = h5File[options.tree][()]
+	signal = h5py.File(options.signal)
+	background = h5py.File(options.background)
+ 	signal_arr = signal[options.tree][()]
+	background_arr = background[options.tree][()]
+
+	# Combine arrays
+	array = np.concatenate([signal_arr, background_arr], axis=0)
+	if yaml_config['Shuffle']: np.random.shuffle(array)
 	
 	# List of parameters
 	parameters = yaml_config['Inputs']
