@@ -107,7 +107,9 @@ def lstm_model(input_shape, nclasses, loss):
 	"""
 	model = Sequential()
 
-	layers = [LSTM(input_shape=input_shape, units=80, return_sequences=True), 
+	layers = [LSTM(input_shape=input_shape, units=64, return_sequences=True),
+			  LSTM(units=32, return_sequences=True),
+			  LSTM(units=16, return_sequences=True),
 			  Flatten(),
 			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
 
@@ -124,7 +126,9 @@ def gru_model(input_shape, nclasses, loss):
 	"""
 	model = Sequential()
 
-	layers = [GRU(input_shape=input_shape, units=80, return_sequences=True), 
+	layers = [GRU(input_shape=input_shape, units=64, return_sequences=True),
+			  GRU(units=32, return_sequences=True),
+			  GRU(units=16, return_sequences=True),
 			  Flatten(),
 			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid')]
 
@@ -134,4 +138,3 @@ def gru_model(input_shape, nclasses, loss):
 	model.compile(loss=loss, optimizer=Adam(), metrics=['accuracy'])
 
 	return model
-

@@ -86,7 +86,7 @@ def convert_data(tree, number=None):
 
 	return data
 
-def create_regression_data(tree, number=None):
+def convert_regression_data(tree, number=None):
 	"""
 	4-vec prediction
 	"""
@@ -122,52 +122,56 @@ def create_regression_data(tree, number=None):
 								vec = TLorentzVector()
 								vec.SetPtEtaPhiE(event.genpt[k], event.geneta[k], event.genphi[k], energy)
 								particle_vec.append(vec)
+				
+				if particle_vec: # FIX THIS
+					if len(particle_vec) == 1: vec_sum = particle_vec[0]
+					else:
+						vec_sum = particle_vec[0]
+						for vec in range(1, len(particle_vec)):
+							vec_sum += vec
 
-				vec_sum = sum(particle_vec)
-				tau_pt_val = vec_sum.Pt() 
-				tau_eta_val = vec_sum.Eta()
-				tau_phi_val = vec_sum.Phi()
-				tau_energy_val = vec_sum.E()
+					tau_pt_val = vec_sum.Pt(); tau_energy_val = vec_sum.E()
+					tau_eta_val = vec_sum.Eta(); tau_phi_val = vec_sum.Phi()
 
-				for k, _ in enumerate(event.genindex):     # iterate through jet particles
-					if (event.genindex[k] == jet_num):
+					for k, _ in enumerate(event.genindex):     # iterate through jet particles
+						if (event.genindex[k] == jet_num):
 
-						if (abs(event.genid[k]) == 11):
-							photon_ID.append(1)
-							electron_ID.append(0)
-							hadron_ID.append(0)
+							if (abs(event.genid[k]) == 11):
+								photon_ID.append(1)
+								electron_ID.append(0)
+								hadron_ID.append(0)
 
-						elif (event.genid[k] == 22):
-							photon_ID.append(0)
-							electron_ID.append(1)
-							hadron_ID.append(0)
+							elif (event.genid[k] == 22):
+								photon_ID.append(0)
+								electron_ID.append(1)
+								hadron_ID.append(0)
 
-						elif (abs(event.genid[k]) > 40):
-							photon_ID.append(0)
-							electron_ID.append(0)
-							hadron_ID.append(1)
+							elif (abs(event.genid[k]) > 40):
+								photon_ID.append(0)
+								electron_ID.append(0)
+								hadron_ID.append(1)
 
-						else: continue
+							else: continue
 					
-						# particle parameters
-						pt.append(event.genpt[k])
-						eta.append(event.geneta[k])
-						phi.append(event.genphi[k])
-						et.append(event.genet[k])
+							# particle parameters
+							pt.append(event.genpt[k])
+							eta.append(event.geneta[k])
+							phi.append(event.genphi[k])
+							et.append(event.genet[k])
 
-						# jet parameters
-						jet_pt.append(event.genjetpt[jet_num])
-						jet_eta.append(event.genjeteta[jet_num])
-						jet_phi.append(event.genjetphi[jet_num])
-						jet_et.append(event.genjetet[jet_num])
+							# jet parameters
+							jet_pt.append(event.genjetpt[jet_num])
+							jet_eta.append(event.genjeteta[jet_num])
+							jet_phi.append(event.genjetphi[jet_num])
+							jet_et.append(event.genjetet[jet_num])
 
-						# tau parameters
-						tau_pt.append(tau_pt_val)
-						tau_eta.append(tau_eta_val)
-						tau_phi.append(tau_phi_val)
-						tau_energy.append(tau_energy_val)
+							# tau parameters
+							tau_pt.append(tau_pt_val)
+							tau_eta.append(tau_eta_val)
+							tau_phi.append(tau_phi_val)
+							tau_energy.append(tau_energy_val)
 
-						particle_num += 1
+							particle_num += 1
 
 		event_num += 1.
 		progress.update_progress(event_num/total_num)
@@ -202,8 +206,8 @@ if __name__ == "__main__":
 	# Convert TTree to numpy structured array
 	rf = TFile(filename)              # open file
 	tree = rf.Get(options.tree)       # get TTree
-	arr = convert_data(tree, int(options.number))
-	#arr = convert_regression_data(tree, int(options.number))
+	#arr = convert_data(tree, int(options.number))
+	arr = convert_regression_data(tree, int(options.number))
 
 	h5File = h5py.File(filename.replace('.root','.z'),'w')
 	h5File.create_dataset(options.tree, data=arr,  compression='lzf')
