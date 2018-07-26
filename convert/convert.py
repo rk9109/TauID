@@ -123,12 +123,12 @@ def convert_regression_data(tree, number=None):
 								vec.SetPtEtaPhiE(event.genpt[k], event.geneta[k], event.genphi[k], energy)
 								particle_vec.append(vec)
 				
-				if particle_vec: # FIX THIS
+				if particle_vec:
 					if len(particle_vec) == 1: vec_sum = particle_vec[0]
 					else:
 						vec_sum = particle_vec[0]
-						for vec in range(1, len(particle_vec)):
-							vec_sum += vec
+						for i in range(1, len(particle_vec)):
+							vec_sum += particle_vec[i]
 
 					tau_pt_val = vec_sum.Pt(); tau_energy_val = vec_sum.E()
 					tau_eta_val = vec_sum.Eta(); tau_phi_val = vec_sum.Phi()

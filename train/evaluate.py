@@ -35,7 +35,7 @@ def plot_history(history, output, filename):
 	
 	return None
 
-def plot_roc(model, x_test, y_test, output, filename):
+def plot_roc(model, x_data, y_data, output, filename):
 	"""
 	Return ROC curve
 	"""	
@@ -71,26 +71,26 @@ def get_workingpoints(tpr, fpr, thresholds, output):
 		if ((fpr[idx] > loose) and (loose_cut == 0)):
 			loose_cut = thr
 			print('Loose cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]))
-			f.write('Loose cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]))
+			f.write('Loose cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]) + '\n')
 		if ((fpr[idx] > medium) and (medium_cut == 0)):
 			medium_cut = thr	
-			print('Medium cut: ' + str(thr) + ' TPR: ' + str(tpr[idx])) + ' FPR: ' + str(fpr[idx]))
-			f.write('Medium cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]))
+			print('Medium cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]))
+			f.write('Medium cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]) + '\n')
 		if ((fpr[idx] > tight) and (tight_cut == 0)):
 			tight_cut = thr
-			print('Tight cut: ' + str(thr) + ' TPR: ' + str(tpr[idx])) + ' FPR: ' + str(fpr[idx]))
-			f.write('Tight cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]))
+			print('Tight cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]))
+			f.write('Tight cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]) + '\n')
 	
 	f.close()
 
 	return (loose_cut, medium_cut, tight_cut)
 
-def plot_efficiency():
+def plot_efficiency(model, x_data, y_data, wp, output, filename):
 	"""
 	docstring
 	"""
 	raise Exception('Efficiency plot not implemented')
-	
+
 	return None
 
 if __name__ == "__main__":
@@ -124,9 +124,9 @@ if __name__ == "__main__":
 	tpr, fpr, thresholds = plot_roc(model, x_test, y_test, output, filename)
 	
 	# Get working points
-	loose_cut, medium_cut, tight_cut = get_workingpoints(tpr, fpr, thresholds)
+	loose_cut, medium_cut, tight_cut = get_workingpoints(tpr, fpr, thresholds, output)
 
-	# TODO Plot background/signal efficiency vs. Pt
+	# TODO Plot background/efficiency vs. Pt
 	
 
 

@@ -1,0 +1,26 @@
+Inputs:
+    - pt     
+    - eta    
+    - phi    
+    - et
+    - photon_ID
+    - electron_ID
+    - hadron_ID
+    - jet_pt # required
+
+Labels:
+    - tau_pt
+    - tau_eta
+    - tau_phi
+    - tau_energy
+    - jet_pt # required
+
+KerasModel: regression_model
+KerasLoss: mean_squared_error
+
+NormalizeInputs: 0
+InputType: dense
+MaxParticles: 10
+Shuffle: 1
+
+Filename: regression_test
