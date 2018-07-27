@@ -7,11 +7,11 @@ Inputs:
     - photon_ID
     - electron_ID
     - hadron_ID
-    - jet_pt # required
+    - jet_index # required
 
 Labels:
     - classification
-    - jet_pt # required
+    - jet_index # required
 
 KerasModel: onelayer_model
 KerasLoss: binary_crossentropy
@@ -20,5 +20,6 @@ NormalizeInputs: 1
 InputType: dense
 MaxParticles: 10
 Shuffle: 1
+L1Reg: 0.01
 
 Filename: onelayer_norm_base

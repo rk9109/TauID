@@ -27,7 +27,7 @@ def convert_sequence(yaml_config, parameters, labels,  parameters_df, labels_df,
 	event_num = 0. ; total_num = len(labels_df)
 
 	for i in range(len(labels_df)):
-		parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
+		parameters_df_i = parameters_df[parameters_df['jet_index'] == labels_df['jet_index'].iloc[i]]
 		index_values = parameters_df_i.index.values
 		parameters_val_i = parameters_val[index_values, :-1]
 	
@@ -69,7 +69,7 @@ def convert_image(yaml_config, parameters, labels, parameters_df, labels_df, par
 	xbins = np.linspace(yaml_config['MinX'], yaml_config['MaxX'], BinsX + 1)
 	ybins = np.linspace(yaml_config['MinY'], yaml_config['MaxY'], BinsY + 1)
 	parameters.remove('eta'); parameters.remove('phi')
-	parameters.remove('jet_eta'); parameters.remove('jet_phi'); parameters.remove('jet_pt')
+	parameters.remove('jet_eta'); parameters.remove('jet_phi'); parameters.remove('jet_index')
 		
 	# Allocate space
 	parameters_image = np.zeros((len(labels_df), BinsX, BinsY, len(parameters))) 	
@@ -78,7 +78,7 @@ def convert_image(yaml_config, parameters, labels, parameters_df, labels_df, par
 	event_num = 0. ; total_num = len(labels_df)
 
 	for i in range(len(labels_df)):
-		parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
+		parameters_df_i = parameters_df[parameters_df['jet_index'] == labels_df['jet_index'].iloc[i]]
 			
 		eta = np.asarray(parameters_df_i['eta'])
 		phi = np.asarray(parameters_df_i['phi'])
@@ -123,7 +123,7 @@ def convert_vector(yaml_config, parameters, labels, parameters_df, labels_df, pa
 	event_num = 0. ; total_num = len(labels_df)
 
 	for i in range(len(labels_df)):
-		parameters_df_i = parameters_df[parameters_df['jet_pt'] == labels_df['jet_pt'].iloc[i]]
+		parameters_df_i = parameters_df[parameters_df['jet_index'] == labels_df['jet_index'].iloc[i]]
 		index_values = parameters_df_i.index.values
 		parameters_val_i = parameters_val[index_values, :-1]
 		num_particles = len(parameters_val_i)
@@ -199,6 +199,10 @@ def get_features(options, yaml_config):
 	background = h5py.File(options.background)
  	signal_arr = signal[options.tree][()]
 	background_arr = background[options.tree][()]
+	
+	# Remove background from signal
+	indices = np.where(signal_arr['classification'] == 0)[0]
+	signal_arr = np.delete(signal_arr, indices, axis = 0)
 
 	# Combine arrays
 	array = np.concatenate([signal_arr, background_arr], axis=0)
@@ -211,7 +215,7 @@ def get_features(options, yaml_config):
 	# Convert to dataframe
 	parameters_df = pd.DataFrame(array, columns=parameters)
 	reference_df = pd.DataFrame(array, columns=labels)
-	labels_df = reference_df.drop_duplicates(subset='jet_pt', keep='first')
+	labels_df = reference_df.drop_duplicates(subset='jet_index', keep='first')
 
 	# Convert to numpy array
 	parameters_val = parameters_df.values

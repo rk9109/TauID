@@ -101,7 +101,7 @@ if __name__ == "__main__":
  	options = parser.parse_args()
 	
 	# Check output directory
-	output_plots = 'saved-plots/'
+	output_plots = 'saved-plots-higgs/'
 
 	if not os.path.isdir(output_plots):
 		print('Specified save directory not found. Creating new directory...')

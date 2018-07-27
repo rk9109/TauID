@@ -1,12 +1,16 @@
 Inputs:
-    - pt
-    - eta    
-    - phi    
-    - energy
-    - charge
-    - photon_ID
-    - electron_ID
-    - hadron_ID
+    #- pt
+    #- eta    
+    #- phi    
+    #- energy
+    #- charge
+    #- photon_ID
+    #- electron_ID
+    #- hadron_ID
+    - jet_pt
+    #- jet_eta
+    #- jet_phi
+    #- jet_energy
     - jet_index # required
 
 Labels:
@@ -20,6 +24,6 @@ NormalizeInputs: 0
 InputType: dense
 MaxParticles: 10
 Shuffle: 1
-L1Reg: 0.01
+L1Reg: 0
 
-Filename: onelayer_base
+Filename: check

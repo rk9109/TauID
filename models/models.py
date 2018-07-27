@@ -2,6 +2,7 @@ from keras.models import Sequential
 from keras.optimizers import SGD, Adam
 from keras.layers import *
 from keras.callbacks import EarlyStopping
+from keras.regularizers import l1
 import h5py
 
 def onelayer_model(input_dim, nclasses, loss, l1Reg=0):
@@ -120,7 +121,7 @@ def conv2d_model(input_shape, nclasses, loss, l1Reg=0):
 					 use_bias=True, activation='relu', W_regularizer = l1(l1Reg)),
 			  Flatten(),
 			  Dense(units=32, kernel_initializer='random_uniform', activation='relu', W_regularizer = l1(l1Reg)),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid'
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid',
 					W_regularizer = l1(l1Reg))]
 	
 	for layer in layers:
@@ -159,7 +160,7 @@ def gru_model(input_shape, nclasses, loss, l1Reg=0):
 			  GRU(units=32, return_sequences=True, W_regularizer = l1(l1Reg)),
 			  GRU(units=16, return_sequences=True, W_regularizer = l1(l1Reg)),
 			  Flatten(),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid'
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid',
 				    W_regularizer = l1(l1Reg))]
 
 	for layer in layers:

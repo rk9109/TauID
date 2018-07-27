@@ -6,14 +6,14 @@ Inputs:
     - photon_ID
     - electron_ID
     - hadron_ID
-    - jet_pt # required
+    - jet_index # required
 
 Labels:
     - tau_pt
     - tau_eta
     - tau_phi
     - tau_energy
-    - jet_pt # required
+    - jet_index # required
 
 KerasModel: regression_model
 KerasLoss: mean_squared_error
@@ -22,5 +22,6 @@ NormalizeInputs: 0
 InputType: dense
 MaxParticles: 10
 Shuffle: 1
+L1Reg: 0.01
 
 Filename: regression_test

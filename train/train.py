@@ -77,7 +77,7 @@ def train_model(x_train, y_train, x_test, y_test, model, epochs, batch, val_spli
 	Train model
 	"""
 	# Fit model
-	early_stopping = EarlyStopping(monitor='val_loss', patience=100)
+	early_stopping = EarlyStopping(monitor='val_loss', patience=10)
 	history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch, 
 					    callbacks=[early_stopping], validation_split=val_split, verbose=verbose)
 
@@ -96,8 +96,8 @@ if __name__ == "__main__":
 	options = parser.parse_args()
 
 	# Check output directory
-	output_models = 'saved-models/'
-	output_data = 'saved-data/'
+	output_models = 'saved-models-higgs/'
+	output_data = 'saved-data-higgs/'
 	
 	if not os.path.isdir(output_models):
 		print('Specified output directory not found. Creating new directory...')
