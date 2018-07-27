@@ -1,4 +1,4 @@
-# TauID
+# Tau Identification
 Machine learning algorithms for tau particle identification.
 
 ## Setup
