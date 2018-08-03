@@ -2,8 +2,7 @@ Inputs:
     - pt     
     - eta    
     - phi    
-    - energy
-    - charge
+    - et
     - photon_ID
     - electron_ID
     - hadron_ID
@@ -15,6 +14,7 @@ Labels:
 
 KerasModel: threelayer_model
 KerasLoss: binary_crossentropy
+Regression: False
 
 NormalizeInputs: 1
 InputType: dense

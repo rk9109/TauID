@@ -46,7 +46,7 @@ def save_model(model, history, output, filename):
 
 	return None
 
-def save_data(filename, x_train, x_test, y_train, y_test):
+def save_data(filename, x_train, x_test, y_train, y_test, array):
 	"""
 	Save generated data
 	"""
@@ -56,12 +56,13 @@ def save_data(filename, x_train, x_test, y_train, y_test):
 	h5File.create_dataset('x_test', data=x_test, compression='lzf')	
 	h5File.create_dataset('y_train', data=y_train,  compression='lzf')
 	h5File.create_dataset('y_test', data=y_test, compression='lzf')
+	h5File.create_dataset('array', data=array, compression='lzf')
 	h5File.close()
 	del h5File
 
 	return None
 
-def get_data(filename):
+def load_data(filename):
 	"""
 	Reload generated data
 	"""
@@ -69,15 +70,16 @@ def get_data(filename):
 	h5File = h5py.File(filename)
  	x_train = h5File['x_train']; x_test = h5File['x_test']
 	y_train = h5File['y_train']; y_test = h5File['y_test']
-	
-	return x_train, x_test, y_train, y_test
+	array = h5File['array']
+
+	return x_train, x_test, y_train, y_test, array
 
 def train_model(x_train, y_train, x_test, y_test, model, epochs, batch, val_split=0.25, verbose=True):
 	"""
 	Train model
 	"""
 	# Fit model
-	early_stopping = EarlyStopping(monitor='val_loss', patience=10)
+	early_stopping = EarlyStopping(monitor='val_loss', patience=15)
 	history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch, 
 					    callbacks=[early_stopping], validation_split=val_split, verbose=verbose)
 
@@ -96,8 +98,8 @@ if __name__ == "__main__":
 	options = parser.parse_args()
 
 	# Check output directory
-	output_models = 'saved-models-higgs/'
-	output_data = 'saved-data-higgs/'
+	output_models = 'saved-models/'
+	output_data = 'saved-data/'
 	
 	if not os.path.isdir(output_models):
 		print('Specified output directory not found. Creating new directory...')
@@ -112,11 +114,11 @@ if __name__ == "__main__":
 	filename = yaml_config['Filename']
 
 	if (options.load):
-		x_train, x_test, y_train, y_test = get_data(options.load)
+		x_train, x_test, y_train, y_test, _ = load_data(options.load)
 	
 	elif (options.config):
-		x_train, x_test, y_train, y_test = get_features(options, yaml_config)
-		save_data(output_data + filename, x_train, x_test, y_train, y_test)
+		x_train, x_test, y_train, y_test, array = get_features(options, yaml_config)
+		save_data(output_data + filename, x_train, x_test, y_train, y_test, array)
 
 	else:
 		raise Exception('Load/Config file not specified.')

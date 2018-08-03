@@ -4,8 +4,8 @@ import pandas as pd
 from utilities import progress
 from sklearn.preprocessing import *
 from sklearn.model_selection import train_test_split
-#seed = 42
-#numpy.random.seed(seed)
+seed = 0
+np.random.seed(seed)
 
 def convert_sequence(yaml_config, parameters, labels,  parameters_df, labels_df, parameters_val, labels_val): 
 	"""
@@ -196,26 +196,37 @@ def get_features(options, yaml_config):
 		   yaml_config | Dictionary of config options
 	"""	
 	signal = h5py.File(options.signal)
-	background = h5py.File(options.background)
  	signal_arr = signal[options.tree][()]
-	background_arr = background[options.tree][()]
+	if (options.background):
+		background = h5py.File(options.background)
+		background_arr = background[options.tree][()]
 	
-	# Remove background from signal
-	indices = np.where(signal_arr['classification'] == 0)[0]
-	signal_arr = np.delete(signal_arr, indices, axis = 0)
-
 	# Combine arrays
-	array = np.concatenate([signal_arr, background_arr], axis=0)
+	array = signal_arr
+	if (options.background): 
+		array = np.concatenate([signal_arr, background_arr], axis=0)	
+	
 	if yaml_config['Shuffle']: np.random.shuffle(array)
 	
 	# List of parameters
 	parameters = yaml_config['Inputs']
 	labels = yaml_config['Labels']
-
+	
 	# Convert to dataframe
 	parameters_df = pd.DataFrame(array, columns=parameters)
-	reference_df = pd.DataFrame(array, columns=labels)
-	labels_df = reference_df.drop_duplicates(subset='jet_index', keep='first')
+	labels_df = pd.DataFrame(array, columns=labels)	
+	labels_df = labels_df.drop_duplicates(subset='jet_index', keep='first')
+
+	# Array transformations
+	if yaml_config['Regression']:
+		arr_parameters = ['jet_pt','jet_eta','jet_phi','jet_et','jet_index',
+						  'tau_pt','tau_eta','tau_phi','tau_energy']
+	else: arr_parameters = ['jet_pt','jet_eta','jet_phi','jet_et','jet_index',
+					        'classification']
+
+	array_df = pd.DataFrame(array, columns=arr_parameters)
+	array_df = array_df.drop_duplicates(subset='jet_index', keep='first')
+	array = array_df.values
 
 	# Convert to numpy array
 	parameters_val = parameters_df.values
@@ -236,9 +247,9 @@ def get_features(options, yaml_config):
 		raise Exception('Invalid InputType')
 
 	# Generate train/test split
-	x_train, x_test, y_train, y_test = train_test_split(parameters_val, labels_val, test_size=0.25, random_state=42)
+	x_train, x_test, y_train, y_test = train_test_split(parameters_val, labels_val, test_size=0.25, random_state=seed)
+	_, _, _, array = train_test_split(parameters_val, array, test_size=0.25, random_state=seed)	
 	x_train, x_test = normalize(yaml_config, x_train, x_test)
 
-	return x_train, x_test, y_train, y_test
-
+	return x_train, x_test, y_train, y_test, array
 

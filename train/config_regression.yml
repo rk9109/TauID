@@ -6,17 +6,22 @@ Inputs:
     - photon_ID
     - electron_ID
     - hadron_ID
+    - jet_pt
+    - jet_eta
+    - jet_phi
+    - jet_et
     - jet_index # required
 
 Labels:
     - tau_pt
-    - tau_eta
-    - tau_phi
-    - tau_energy
+      #- tau_eta
+      #- tau_phi
+      #- tau_energy
     - jet_index # required
 
 KerasModel: regression_model
-KerasLoss: mean_squared_error
+KerasLoss: 'mse'
+Regression: True
 
 NormalizeInputs: 0
 InputType: dense

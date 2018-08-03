@@ -2,8 +2,7 @@ Inputs:
     - pt         # required
     - eta        # required
     - phi        # required
-    - energy
-    - charge
+    - et
     - photon_ID
     - electron_ID
     - hadron_ID
@@ -17,6 +16,7 @@ Labels:
 
 KerasModel: conv2d_model
 KerasLoss: binary_crossentropy
+Regression: False
 
 NormalizeInputs: 0
 InputType: image
