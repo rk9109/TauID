@@ -1,19 +1,18 @@
 Inputs:
-    - pt     
-    - eta   
+    - pt    
+    - eta    
     - phi    
-    - energy
+    - et
     - photon_ID
-    - lepton_ID
-    - neutral_hadron_ID
-    - charged_hadron_ID
+    - electron_ID
+    - hadron_ID
     - jet_index # required
 
 Labels:
     - classification
     - jet_index # required
 
-KerasModel: gru_model
+KerasModel: conv1d_model
 KerasLoss: binary_crossentropy
 Regression: False
 
@@ -23,4 +22,4 @@ MaxParticles: 10
 Shuffle: 1
 L1Reg: 0.01
 
-Filename: gru_base
+Filename: conv1D_base 

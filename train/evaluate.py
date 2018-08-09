@@ -5,6 +5,7 @@ from keras import models
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_curve
 from train import parse_yaml, load_data
+from efficiency import plot_efficiency
 
 def plot_history(history, output, filename):
 	"""
@@ -58,10 +59,9 @@ def plot_roc(model, x_test, y_test, output, filename):
 	plt.xlabel('Background efficiency')
 	plt.ylabel('Signal efficiency')
 	plt.title('ROC curve: ' + filename)
-	plt.legend(loc='best')
 	plt.savefig(output + '_roc.png')
 
-	return tpr, fpr, thresholds
+	return tpr, fpr, thresholds, cuts_dict
 
 def get_workingpoints(tpr, fpr, thresholds, output):
 	"""
@@ -128,5 +128,19 @@ if __name__ == "__main__":
 
 	# Plot ROC curve
 	_, x_test, _, y_test, array = load_data(options.load)
-	tpr, fpr, thresholds = plot_roc(model, x_test, y_test, output, filename)
+	_, _, _, cuts_dict = plot_roc(model, x_test, y_test, output, filename)
+	
+	# Plot Efficiency vs. parameter	
+	bins = 25; low = 0; high = 500
+	
+	for cut in cuts_dict.keys():
+		# Pt plot
+		parameter = 'jet_pt'
+		plot_efficiency(model, x_test, y_test, array, parameter, bins, low, high, 
+						output+'_'+cut, filename+'_'+cut, wp=cuts_dict[cut][0])
+		
+		# Eta plot
+		parameter = 'jet_eta'
+		plot_efficiency(model, x_test, y_test, array, parameter, bins, low, high, 
+						output+'_'+cut, filename+'_'+cut, wp=cuts_dict[cut][0])
 

@@ -218,11 +218,9 @@ def get_features(options, yaml_config):
 	labels_df = labels_df.drop_duplicates(subset='jet_index', keep='first')
 
 	# Array transformations
-	if yaml_config['Regression']:
-		arr_parameters = ['jet_pt','jet_eta','jet_phi','jet_et','jet_index',
-						  'tau_pt','tau_eta','tau_phi','tau_energy']
-	else: arr_parameters = ['jet_pt','jet_eta','jet_phi','jet_et','jet_index',
-					        'classification']
+	if yaml_config['Regression']: arr_parameters = ['jet_pt','jet_eta','jet_phi','jet_energy','jet_index',
+													'tau_pt','tau_eta','tau_phi','tau_energy']
+	else: arr_parameters = ['jet_pt','jet_eta','jet_phi','jet_energy','jet_index','classification']
 
 	array_df = pd.DataFrame(array, columns=arr_parameters)
 	array_df = array_df.drop_duplicates(subset='jet_index', keep='first')

@@ -2,10 +2,11 @@ Inputs:
     - pt     
     - eta   
     - phi    
-    - et
+    - energy
     - photon_ID
-    - electron_ID
-    - hadron_ID
+    - lepton_ID
+    - neutral_hadron_ID
+    - charged_hadron_ID
     - jet_index # required
 
 Labels:

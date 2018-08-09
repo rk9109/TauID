@@ -1,26 +1,25 @@
 Inputs:
-    - pt     
-    - eta   
+    - pt
+    - eta    
     - phi    
-    - energy
+    - et
     - photon_ID
-    - lepton_ID
-    - neutral_hadron_ID
-    - charged_hadron_ID
+    - electron_ID
+    - hadron_ID
     - jet_index # required
 
 Labels:
     - classification
     - jet_index # required
 
-KerasModel: gru_model
+KerasModel: onelayer_model
 KerasLoss: binary_crossentropy
 Regression: False
 
 NormalizeInputs: 0
-InputType: sequence
+InputType: dense
 MaxParticles: 10
 Shuffle: 1
 L1Reg: 0.01
 
-Filename: gru_base
+Filename: onelayer_base

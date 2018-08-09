@@ -2,56 +2,62 @@ import sys, os
 import argparse
 import ROOT
 from ROOT import *
+from utilities import progress
 from keras import models
 from train import parse_yaml, load_data
 
-def plot_efficiency(model, x_test, y_test, array, parameter, output, filename, wp=0.5):
+def plot_efficiency(model, x_test, y_test, array, parameter, bins, low, high, output, filename, wp=0.5):
 	"""
 	Plot efficiency histogram
 	"""
-	print('Plotting efficiency...') 
+	ROOT.gROOT.SetBatch(ROOT.kTRUE) # do not print outputs of draw or load graphics
+	
+	print('Calculating predictions...') 
 	y_pred = model.predict(x_test).ravel()
-
-	# Values
-	bins = 25; low = 0; high = 500
-
+	
+	# Intialize histograms
 	hist1 = TH1F("correct-tau", "", bins, low, high)
 	hist2 = TH1F("total-tau", "", bins, low, high)
 	hist3 = TH1F("correct-other", "", bins, low, high)
 	hist4 = TH1F("total-other", "", bins, low, high)
+	
+	# Get indexes	
+	parameter_list = ['jet_pt','jet_eta','jet_phi','jet_et','jet_index','classification']
+	param_idx = parameter_list.index(parameter)
+	class_idx = parameter_list.index('classification')
 
 	# Iterate through array
-	for idx, _ in enumerate(x_test):
-		classification = array['classification'][idx]
-		param_val = array[parameter][idx]
+	num = 0.; total_num = x_test.shape[0]
+	
+	for idx in range(x_test.shape[0]):
+		classification = array[idx][class_idx]
+		param_val = array[idx][param_idx]
 		y = y_pred[idx]
 
 		if classification == 1:
 			if y > wp: hist1.Fill(param_val)
 			hist2.Fill(param_val)
 		if classification == 0:
-			if y < wp: hist3.Fill(param_val)
+			if y > wp: hist3.Fill(param_val)
 			hist4.Fill(param_val)
-	
+		
+		num += 1
+		progress.update_progress_inline('Calculating efficiency...', num/total_num)
+
 	cst = TCanvas("cst","cst", 10, 10, 1000, 1000) # define canvas	
 
-	T1 = TGraphAsymmErrors() # create graphs
-	T2 = TGraphAsymmErrors()
-	T1.Divide(hist1, hist2, "cl = 0.683")
-	T2.Divide(hist3, hist4, "cl = 0.683")
+	# Create graphs
+	T1 = TGraphAsymmErrors(hist1, hist2, "cl = 0.683 b(1,1)")
+	T2 = TGraphAsymmErrors(hist3, hist4, "cl = 0.683 b(1,1)")
 
-	T1.SetMarkerColor(4)
-	T2.SetMarkerColor(2)
-	T1.SetMarkerStyle(8)
-	T2.SetMarkerStyle(22)
-	T1.SetLineColor(4)
-	T2.SetLineColor(2)
+	T1.SetMarkerColor(4); T2.SetMarkerColor(2)
+	T1.SetMarkerStyle(8); T2.SetMarkerStyle(22)
+	T1.SetLineColor(4);   T2.SetLineColor(2)
 					
 	mg = TMultiGraph() # create multigraph
-	mg.Add(T1)
-	mg.Add(T2)
+	mg.Add(T1); mg.Add(T2)
 	mg.Draw('ap')
-	mg.SetTitle('Test Efficiency Plot') # set title and axis labels
+	mg.SetTitle('Efficiency vs. '+parameter+': '+filename) # set title and axis labels
 	mg.GetXaxis().SetTitle(str(parameter))
 	mg.GetYaxis().SetTitle('efficiency')
 	mg.GetYaxis().SetRangeUser(0., 1.2)
@@ -68,9 +74,8 @@ def plot_efficiency(model, x_test, y_test, array, parameter, output, filename, w
 	entry2.SetMarkerStyle(22)
 	
 	leg.Draw()
-
 	cst.Update()
-	cst.SaveAs(filename + ".png") # save as png
+	cst.SaveAs(output+parameter+".pdf") # save as pdf
 	
 	return None
 
@@ -95,6 +100,10 @@ if __name__ == "__main__":
 
 	model = models.load_model(options.directory + filename + '.h5') 	
 	
-	# Plot Efficiency vs. parameter
+	# Values
+	bins = 25; low = 0; high = 500;
 	parameter = 'jet_pt'
-	plot_efficiency(model, x_test, y_test, array, parameter, output, filename)
+
+	# Plot Efficiency vs. parameter	
+	_, x_test, _, y_test, array = load_data(options.load)
+	plot_efficiency(model, x_test, y_test, array, parameter, bins, low, high, output, filename, wp=0.5)

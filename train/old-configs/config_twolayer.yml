@@ -1,27 +1,20 @@
 Inputs:
     - pt     
     - eta    
-    - phi    
+    - phi 
     - et
     - photon_ID
     - electron_ID
     - hadron_ID
-    - jet_pt
-    - jet_eta
-    - jet_phi
-    - jet_et
     - jet_index # required
 
 Labels:
-    - tau_pt
-      #- tau_eta
-      #- tau_phi
-      #- tau_energy
+    - classification
     - jet_index # required
 
-KerasModel: regression_model
-KerasLoss: 'mse'
-Regression: True
+KerasModel: twolayer_model
+KerasLoss: binary_crossentropy
+Regression: False
 
 NormalizeInputs: 0
 InputType: dense
@@ -29,4 +22,4 @@ MaxParticles: 10
 Shuffle: 1
 L1Reg: 0.01
 
-Filename: regression_test
+Filename: twolayer_base

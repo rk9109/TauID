@@ -79,7 +79,7 @@ def train_model(x_train, y_train, x_test, y_test, model, epochs, batch, val_spli
 	Train model
 	"""
 	# Fit model
-	early_stopping = EarlyStopping(monitor='val_loss', patience=15)
+	early_stopping = EarlyStopping(monitor='val_loss', patience=10)
 	history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch, 
 					    callbacks=[early_stopping], validation_split=val_split, verbose=verbose)
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-s', '--signal', dest='signal', help='input ROOT signal file')
 	parser.add_argument('-b', '--back', dest='background', help='input ROOT background file')
-	parser.add_argument('-t', '--tree', dest='tree', default='GenNtupler/gentree', help='input ROOT tree')
+	parser.add_argument('-t', '--tree', dest='tree', default='dumpP4/objects', help='input ROOT tree')
 	parser.add_argument('-l', '--load', dest='load', help='load data file')
 	parser.add_argument('-c', '--config', dest='config', help='configuration file')
 	options = parser.parse_args()
@@ -125,16 +125,18 @@ if __name__ == "__main__":
 
 	# Train model
 	gen_model = getattr(models, yaml_config['KerasModel'])
-	
+	if yaml['Regression']: output = 'linear'
+	else: output = 'sigmoid'
+
 	if yaml_config['InputType'] == 'dense':
-		model = gen_model(x_train.shape[1], y_train.shape[1], yaml_config['KerasLoss'])
+		model = gen_model(x_train.shape[1], y_train.shape[1], yaml_config['KerasLoss'], output, yaml_config['L1Reg'])
 	
 	if yaml_config['InputType'] == 'image':
-		model = gen_model(x_train.shape[1:], y_train.shape[1], yaml_config['KerasLoss'])
+		model = gen_model(x_train.shape[1:], y_train.shape[1], yaml_config['KerasLoss'], output, yaml_config['L1Reg'])
 	
 	if yaml_config['InputType'] == 'sequence':
-		model = gen_model(x_train.shape[1:], y_train.shape[1], yaml_config['KerasLoss'])
+		model = gen_model(x_train.shape[1:], y_train.shape[1], yaml_config['KerasLoss'], output, yaml_config['L1Reg'])
 
-	model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 1024)
+	model, history, _, _ = train_model(x_train, y_train, x_test, y_test, model, 1024, 512)
 	
 	save_model(model, history, output_models, filename)	
