@@ -3,7 +3,9 @@ import argparse
 import h5py
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
+import ROOT
+from ROOT import *
+from rootpy.plotting import *
 
 def plot_spectrum(array, parameter, low, high, bins, name):
 	"""
@@ -43,6 +45,8 @@ if __name__ == "__main__":
 	filename = options.filename	
 	array_file = h5py.File(filename)
  	array = array_file[options.tree][()]
-
-	plot_spectrum(array, 'jet_pt', 0, 1500, 125, 'Parameter') 
+	
+	# Plot spectrum
+	parameter = 'jet_pt'
+	plot_spectrum(array, parameter, 0, 1500, 125, 'Parameter') 
 

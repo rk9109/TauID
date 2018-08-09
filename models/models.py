@@ -5,7 +5,7 @@ from keras.callbacks import EarlyStopping
 from keras.regularizers import l1
 import h5py
 
-def onelayer_model(input_dim, nclasses, loss, l1Reg=0):
+def onelayer_model(input_dim, nclasses, loss, output, l1Reg=0):
 	"""
 	One hidden layer
 	"""
@@ -13,7 +13,7 @@ def onelayer_model(input_dim, nclasses, loss, l1Reg=0):
 	
 	layers = [Dense(input_dim=input_dim, units=25, kernel_initializer='random_uniform', activation='relu',
 			  W_regularizer = l1(l1Reg)), 
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid',
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output,
 		      W_regularizer = l1(l1Reg))]
 	
 	for layer in layers:
@@ -23,7 +23,7 @@ def onelayer_model(input_dim, nclasses, loss, l1Reg=0):
 
 	return model
 
-def twolayer_model(input_dim, nclasses, loss, l1Reg=0):
+def twolayer_model(input_dim, nclasses, loss, output, l1Reg=0):
 	"""
 	Two hidden layers
 	"""
@@ -33,7 +33,7 @@ def twolayer_model(input_dim, nclasses, loss, l1Reg=0):
 			  W_regularizer = l1(l1Reg)), 
 			  Dense(units=10, kernel_initializer='random_uniform', activation='relu', 
 			  W_regularizer = l1(l1Reg)),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid',
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output,
 			  W_regularizer = l1(l1Reg))]
 	
 	for layer in layers:
@@ -43,7 +43,7 @@ def twolayer_model(input_dim, nclasses, loss, l1Reg=0):
 
 	return model
 
-def threelayer_model(input_dim, nclasses, loss, l1Reg=0):
+def threelayer_model(input_dim, nclasses, loss, output, l1Reg=0):
 	"""
 	Three hidden layers
 	"""
@@ -55,7 +55,7 @@ def threelayer_model(input_dim, nclasses, loss, l1Reg=0):
 			  W_regularizer = l1(l1Reg)),
 			  Dense(units=10, kernel_initializer='random_uniform', activation='relu',
 			  W_regularizer = l1(l1Reg)),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid',
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output,
 			  W_regularizer = l1(l1Reg))]
 
 	for layer in layers:
@@ -65,25 +65,7 @@ def threelayer_model(input_dim, nclasses, loss, l1Reg=0):
 
 	return model
 
-def regression_model(input_dim, nclasses, loss):
-	"""
-	Test model for regression
-	"""
-	model = Sequential()
-	
-	layers = [Dense(input_dim=input_dim, units=25, kernel_initializer='random_uniform', activation='relu'), 
-			  Dense(units=25, kernel_initializer='random_uniform', activation='relu'),
-			  Dense(units=10, kernel_initializer='random_uniform', activation='relu'),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='linear')]
-
-	for layer in layers:
-		model.add(layer)
-
-	model.compile(loss=loss, optimizer=Adam(), metrics=['accuracy'])
-
-	return model
-
-def conv1d_model(input_shape, nclasses, loss, l1Reg=0):
+def conv1d_model(input_shape, nclasses, loss, output, l1Reg=0):
 	"""
 	Three convolutional layers
 	"""
@@ -97,7 +79,7 @@ def conv1d_model(input_shape, nclasses, loss, l1Reg=0):
 					 use_bias=True, activation='relu', W_regularizer = l1(l1Reg)),
 			  Flatten(),
 			  Dense(units=32, kernel_initializer='random_uniform', activation='relu', W_regularizer = l1(l1Reg)),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid',
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output,
 					W_regularizer = l1(l1Reg))]
 	
 	for layer in layers:
@@ -107,7 +89,7 @@ def conv1d_model(input_shape, nclasses, loss, l1Reg=0):
 
 	return model
 
-def conv2d_model(input_shape, nclasses, loss, l1Reg=0): 
+def conv2d_model(input_shape, nclasses, loss, output, l1Reg=0): 
 	"""
 	Three convolutional layers
 	"""
@@ -121,7 +103,7 @@ def conv2d_model(input_shape, nclasses, loss, l1Reg=0):
 					 use_bias=True, activation='relu', W_regularizer = l1(l1Reg)),
 			  Flatten(),
 			  Dense(units=32, kernel_initializer='random_uniform', activation='relu', W_regularizer = l1(l1Reg)),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid',
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output,
 					W_regularizer = l1(l1Reg))]
 	
 	for layer in layers:
@@ -131,7 +113,7 @@ def conv2d_model(input_shape, nclasses, loss, l1Reg=0):
 
 	return model
 
-def lstm_model(input_shape, nclasses, loss, l1Reg=0):
+def lstm_model(input_shape, nclasses, loss, output, l1Reg=0):
 	"""
 	Simple LSTM
 	"""
@@ -141,7 +123,7 @@ def lstm_model(input_shape, nclasses, loss, l1Reg=0):
 			  LSTM(units=32, return_sequences=True, W_regularizer = l1(l1Reg)),
 			  LSTM(units=16, return_sequences=True, W_regularizer = l1(l1Reg)),
 			  Flatten(),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid', W_regularizer = l1(l1Reg))]
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output, W_regularizer = l1(l1Reg))]
 
 	for layer in layers:
 		model.add(layer)
@@ -150,7 +132,7 @@ def lstm_model(input_shape, nclasses, loss, l1Reg=0):
 
 	return model
 
-def gru_model(input_shape, nclasses, loss, l1Reg=0):
+def gru_model(input_shape, nclasses, loss, output, l1Reg=0):
 	"""
 	Simple GRU
 	"""
@@ -160,7 +142,7 @@ def gru_model(input_shape, nclasses, loss, l1Reg=0):
 			  GRU(units=32, return_sequences=True, W_regularizer = l1(l1Reg)),
 			  GRU(units=16, return_sequences=True, W_regularizer = l1(l1Reg)),
 			  Flatten(),
-			  Dense(units=nclasses, kernel_initializer='random_uniform', activation='sigmoid',
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output,
 				    W_regularizer = l1(l1Reg))]
 
 	for layer in layers:
@@ -169,3 +151,5 @@ def gru_model(input_shape, nclasses, loss, l1Reg=0):
 	model.compile(loss=loss, optimizer=Adam(), metrics=['accuracy'])
 
 	return model
+
+

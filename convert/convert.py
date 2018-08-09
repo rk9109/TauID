@@ -4,24 +4,32 @@ import numpy as np
 from utilities import progress
 from ROOT import *
 
+def delta_phi(phi1, phi2):
+	pi = np.pi
+	x = phi1 - phi2
+	while x >= pi:
+		x -= (2*pi)
+	while x < -pi:
+		x += (2*pi)
+	return x
+	
 def convert_data(tree, number=None):
 	"""
-	docstring
+	Convert data for binary classification
 	"""
 	event_num = 0.
 	jet_num = 0
 	particle_num = 0
 	if number: total_num = number
-	else: total_num = tree.GetEntries()
+	else: total_num = int(tree.GetEntries())
 
 	# Parameter lists
 	pt = []
 	eta = []
 	phi = []
-	energy = []
-	charge = []
+	et = []
 	photon_ID = []; electron_ID = []; hadron_ID = []
-	jet_pt = []; jet_eta = []; jet_phi = []; jet_energy = []; jet_index = []
+	jet_pt = []; jet_eta = []; jet_phi = []; jet_et = []; jet_index = []
 	classification = []
 
 	for event in tree:
@@ -30,12 +38,12 @@ def convert_data(tree, number=None):
 			for k, _ in enumerate(event.genindex):         # iterate through jet particles
 				if (event.genindex[k] == jet_idx):
 
-					if (abs(event.genid[k]) == 11):
+					if (event.genid[k] == 22):
 						photon_ID.append(1)
 						electron_ID.append(0)
 						hadron_ID.append(0)
 
-					elif (event.genid[k] == 22):
+					elif (abs(event.genid[k]) == 11):
 						photon_ID.append(0)
 						electron_ID.append(1)
 						hadron_ID.append(0)
@@ -48,20 +56,21 @@ def convert_data(tree, number=None):
 					else: continue
 					
 					# particle parameters
+					eta_val = event.genjeteta[jet_idx] - event.geneta[k]
+					phi_val = delta_phi(event.genjetphi[jet_idx], event.genphi[k])
 					pt.append(event.genpt[k])
-					eta.append(event.geneta[k])
-					phi.append(event.genphi[k])
-					energy.append(event.genenergy[k])
-					charge.append(event.gencharge[k])
+					eta.append(eta_val)
+					phi.append(phi_val)
+					et.append(event.genet[k])
 
 					# jet parameters
 					jet_pt.append(event.genjetpt[jet_idx])
 					jet_eta.append(event.genjeteta[jet_idx])
 					jet_phi.append(event.genjetphi[jet_idx])
-					jet_energy.append(event.genjetenergy[jet_idx])
+					jet_et.append(event.genjetet[jet_idx])
 					jet_index.append(jet_num)
 
-					if (abs(jet_id) == 15):
+					if (abs(jet_id) >= 4):
 						classification.append(1)
 					else: classification.append(0)
 					
@@ -72,9 +81,9 @@ def convert_data(tree, number=None):
 		event_num += 1.
 		progress.update_progress(event_num/total_num)
 
-	fields =[('pt','f8'), ('eta','f8'), ('phi','f8'), ('energy','f8'), ('charge','i4'),
+	fields =[('pt','f8'), ('eta','f8'), ('phi','f8'), ('et','f8'),
 			 ('photon_ID','i4'), ('electron_ID','i4'), ('hadron_ID','i4'),
-			 ('jet_pt','f8'), ('jet_eta','f8'), ('jet_phi','f8'), ('jet_energy','f8'), ('jet_index','i8'),
+			 ('jet_pt','f8'), ('jet_eta','f8'), ('jet_phi','f8'), ('jet_et','f8'), ('jet_index','i8'),
 			 ('classification','i4')]
 
 	data = np.zeros(particle_num, dtype=fields)
@@ -82,10 +91,9 @@ def convert_data(tree, number=None):
 	data['pt'] = pt
 	data['eta'] = eta
 	data['phi'] = phi
-	data['energy'] = energy
-	data['charge'] = charge
+	data['et'] = et
 	data['photon_ID'] = photon_ID; data['electron_ID'] = electron_ID; data['hadron_ID'] = hadron_ID
-	data['jet_pt'] = jet_pt; data['jet_eta'] = jet_eta; data['jet_phi'] = jet_phi; data['jet_energy'] = jet_energy
+	data['jet_pt'] = jet_pt; data['jet_eta'] = jet_eta; data['jet_phi'] = jet_phi; data['jet_et'] = jet_et
 	data['jet_index'] = jet_index
 	data['classification'] = classification
 
@@ -93,13 +101,13 @@ def convert_data(tree, number=None):
 
 def convert_regression_data(tree, number=None):
 	"""
-	4-vec prediction
+	Convert data for regression
 	"""
 	event_num = 0.
 	jet_num = 0
 	particle_num = 0
 	if number: total_num = number
-	else: total_num = tree.GetEntries()
+	else: total_num = int(tree.GetEntries())
 
 	# Parameter lists
 	pt = []
@@ -113,12 +121,13 @@ def convert_regression_data(tree, number=None):
 	for event in tree:
 		if event_num == total_num: break
 		for jet_idx, jet_id in enumerate(event.genjetid):  # iterate through jet
-			if (abs(jet_id) == 15):                        # consider tau jets	
+			if (abs(jet_id) >= 4):                         # consider tau jets	
 				particle_vec = []
 				
 				for k, _ in enumerate(event.genindex):     # iterate through jet particles
 					if (event.genindex[k] == jet_idx):
-						if (event.genstatus[k] == 1) and ((event.genid[k] in [11, -11, 22]) or (abs(event.genid[k]) > 40)): 
+						if (event.genstatus[k] == 1) and ((event.genid[k] in [11, -11, 22]) 
+										                   or (abs(event.genid[k]) > 40)): 
 							index = k
 							while ((event.genparent[index] != -2) and (abs(event.genid[index] != 15))):
 								index = event.genparent[index]
@@ -146,12 +155,12 @@ def convert_regression_data(tree, number=None):
 					for k, _ in enumerate(event.genindex):     # iterate through jet particles
 						if (event.genindex[k] == jet_idx):
 
-							if (abs(event.genid[k]) == 11):
+							if (event.genid[k] == 22):
 								photon_ID.append(1)
 								electron_ID.append(0)
 								hadron_ID.append(0)
 
-							elif (event.genid[k] == 22):
+							elif (abs(event.genid[k]) == 11):
 								photon_ID.append(0)
 								electron_ID.append(1)
 								hadron_ID.append(0)
@@ -164,9 +173,11 @@ def convert_regression_data(tree, number=None):
 							else: continue
 					
 							# particle parameters
+							eta_val = event.genjeteta[jet_idx] - event.geneta[k]
+							phi_val = delta_phi(event.genjetphi[jet_idx], event.genphi[k])
 							pt.append(event.genpt[k])
-							eta.append(event.geneta[k])
-							phi.append(event.genphi[k])
+							eta.append(eta_val)
+							phi.append(phi_val)
 							et.append(event.genet[k])
 
 							# jet parameters
@@ -220,10 +231,11 @@ if __name__ == "__main__":
 	# Convert TTree to numpy structured array
 	rf = TFile(filename)              # open file
 	tree = rf.Get(options.tree)       # get TTree
-	#arr = convert_data(tree, int(options.number))
-	arr = convert_regression_data(tree, int(options.number))
+	arr = convert_data(tree, int(options.number))
+	#arr = convert_regression_data(tree, int(options.number))
 
-	h5File = h5py.File(filename.replace('.root','.z'),'w')
+	h5File = h5py.File(filename.replace('.root','.z'),'w')	
+	#h5File = h5py.File(filename.replace('.root','_regression.z'),'w')
 	h5File.create_dataset(options.tree, data=arr,  compression='lzf')
 	h5File.close()
 	del h5File
