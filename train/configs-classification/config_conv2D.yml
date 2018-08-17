@@ -2,10 +2,11 @@ Inputs:
     - pt         # required
     - eta        # required
     - phi        # required
-    - et
     - photon_ID
     - electron_ID
-    - hadron_ID
+    - muon_ID
+    - neutral_hadron_ID
+    - charged_hadron_ID
     - jet_eta    # required
     - jet_phi    # required
     - jet_index  # required
@@ -20,8 +21,8 @@ Regression: False
 
 NormalizeInputs: 0
 InputType: image
-Shuffle: 1  
-L1Reg: 0.01
+Shuffle: 0  
+L1Reg: 0
 
 BinsX: 10
 MinX: -0.25
@@ -30,4 +31,4 @@ BinsY: 10
 MinY: -0.25
 MaxY: 0.25
 
-Filename: conv2D_base
+Filename: conv2D

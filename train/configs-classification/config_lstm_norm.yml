@@ -2,9 +2,9 @@ Inputs:
     - pt     
     - eta    
     - phi    
-    - energy
     - photon_ID
-    - lepton_ID
+    - electron_ID
+    - muon_ID
     - neutral_hadron_ID
     - charged_hadron_ID
     - jet_index # required
@@ -20,7 +20,7 @@ Regression: False
 NormalizeInputs: 1 
 InputType: sequence
 MaxParticles: 10
-Shuffle: 1
-L1Reg: 0.01
+Shuffle: 0
+L1Reg: 0
 
-Filename: lstm_norm_base
+Filename: lstm_norm

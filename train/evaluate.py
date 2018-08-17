@@ -1,6 +1,7 @@
 import sys, os
 import argparse
 import json
+import numpy as np
 from keras import models
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_curve
@@ -35,12 +36,19 @@ def plot_history(history, output, filename):
 	
 	return None
 
-def plot_roc(model, x_test, y_test, output, filename):
+def plot_roc(y_pred, y_test, array, output, filename):
 	"""
 	Return ROC curve
 	"""	
 	print('Plotting roc...')
-	y_pred = model.predict(x_test).ravel()
+	
+	# PT cuts: 20 < x < 100
+	indices_low = np.where(array[1] < 20.0)[0].tolist() 
+	indices_high = np.where(array[1] > 100.0)[0].tolist()
+	indices = indices_low + indices_high
+	y_pred = np.delete(y_pred, indices, axis=0)
+	y_test = np.delete(y_test, indices, axis=0)
+	
 	fpr, tpr, thresholds = roc_curve(y_test, y_pred)
 	
 	# Get working points
@@ -49,15 +57,16 @@ def plot_roc(model, x_test, y_test, output, filename):
 	# Plot ROC
 	plt.figure(3)
 	plt.plot([0, 1], [0, 1], 'k--')
-	plt.plot(fpr, tpr, label='Keras')
+	plt.plot(tpr, 1/fpr, label='Keras')
 	
 	# Plot working points
-	plt.plot(cuts_dict['loose'][2], cuts_dict['loose'][1], 'rx')
-	plt.plot(cuts_dict['medium'][2], cuts_dict['medium'][1], 'bx')
-	plt.plot(cuts_dict['tight'][2], cuts_dict['tight'][1], 'gx')
+	plt.plot(cuts_dict['loose'][1], 1/cuts_dict['loose'][2], 'rx')
+	plt.plot(cuts_dict['medium'][1], 1/cuts_dict['medium'][2], 'bx')
+	plt.plot(cuts_dict['tight'][1], 1/cuts_dict['tight'][2], 'gx')
+	plt.yscale('log')
 
-	plt.xlabel('Background efficiency')
-	plt.ylabel('Signal efficiency')
+	plt.xlabel('Signal efficiency')
+	plt.ylabel('1/Background efficiency')
 	plt.title('ROC curve: ' + filename)
 	plt.savefig(output + '_roc.png')
 
@@ -86,13 +95,13 @@ def get_workingpoints(tpr, fpr, thresholds, output):
 		
 		if ((fpr[idx] > medium) and (medium_cut == 0)):
 			medium_cut = thr	
-			cuts_dict['medium'] = (loose_cut, tpr[idx], fpr[idx])
+			cuts_dict['medium'] = (medium_cut, tpr[idx], fpr[idx])
 			print('Medium cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]))
 			f.write('Medium cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]) + '\n')
 		
 		if ((fpr[idx] > tight) and (tight_cut == 0)):
 			tight_cut = thr
-			cuts_dict['tight'] = (loose_cut, tpr[idx], fpr[idx])
+			cuts_dict['tight'] = (tight_cut, tpr[idx], fpr[idx])
 			print('Tight cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]))
 			f.write('Tight cut: ' + str(thr) + ' TPR: ' + str(tpr[idx]) + ' FPR: ' + str(fpr[idx]) + '\n')
 	
@@ -108,18 +117,22 @@ if __name__ == "__main__":
  	options = parser.parse_args()
 	
 	# Check output directory
-	output_plots = 'saved-plots/'
+	output_plots = 'saved-plots'
 
 	if not os.path.isdir(output_plots):
 		print('Specified save directory not found. Creating new directory...')
 		os.mkdir(output_plots)
 
-	# Load model	
+	# Constants	
 	yaml_config = parse_yaml(options.config)	
 	filename = yaml_config['Filename']
 	output = output_plots + filename
-
+	
+	# Predict values 
+	_, x_test, _, y_test, array = load_data(options.load)
+	print('Calculating predictions...') 	
 	model = models.load_model(options.directory + filename + '.h5') 	
+	y_pred = model.predict(x_test).ravel()
 	
 	# Plot loss/accuracy history
 	with open(options.directory + filename + '_history.json', 'r') as json_file:
@@ -127,20 +140,20 @@ if __name__ == "__main__":
 	plot_history(history, output, filename)	
 
 	# Plot ROC curve
-	_, x_test, _, y_test, array = load_data(options.load)
-	_, _, _, cuts_dict = plot_roc(model, x_test, y_test, output, filename)
+	_, _, _, cuts_dict = plot_roc(y_pred, y_test, array, output, filename)
 	
-	# Plot Efficiency vs. parameter	
-	bins = 25; low = 0; high = 500
-	
-	for cut in cuts_dict.keys():
-		# Pt plot
-		parameter = 'jet_pt'
-		plot_efficiency(model, x_test, y_test, array, parameter, bins, low, high, 
-						output+'_'+cut, filename+'_'+cut, wp=cuts_dict[cut][0])
+	# Plot Efficiency vs. parameter		
 		
-		# Eta plot
-		parameter = 'jet_eta'
-		plot_efficiency(model, x_test, y_test, array, parameter, bins, low, high, 
-						output+'_'+cut, filename+'_'+cut, wp=cuts_dict[cut][0])
+	# Pt plot
+	parameter = 'jet_pt'
+	bins = 15; low = 20; high = 125	
+	plot_efficiency(y_pred,y_test,  array, parameter, bins, low, high, output, filename, cuts_dict, plot='signal')	
+	bins = 15; low = 0; high = 250
+	plot_efficiency(y_pred,y_test, array, parameter, bins, low, high, output, filename, cuts_dict, plot='background')
 
+	# Eta plot
+	parameter = 'jet_eta'
+	bins = 15; low = -2.5; high = 2.5
+	plot_efficiency(y_pred,y_test, array, parameter, bins, low, high, output, filename, cuts_dict, plot='signal')
+	plot_efficiency(y_pred,y_test, array, parameter, bins, low, high, output, filename, cuts_dict, plot='background')
+	

@@ -19,7 +19,7 @@ def onelayer_model(input_dim, nclasses, loss, output, l1Reg=0):
 	for layer in layers:
 		model.add(layer)
 
-	model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+	model.compile(loss=loss, optimizer=Adam(), metrics=['accuracy'])
 
 	return model
 
@@ -39,7 +39,7 @@ def twolayer_model(input_dim, nclasses, loss, output, l1Reg=0):
 	for layer in layers:
 		model.add(layer)
 
-	model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+	model.compile(loss=loss, optimizer=Adam(), metrics=['accuracy'])
 
 	return model
 
@@ -151,5 +151,4 @@ def gru_model(input_shape, nclasses, loss, output, l1Reg=0):
 	model.compile(loss=loss, optimizer=Adam(), metrics=['accuracy'])
 
 	return model
-
 

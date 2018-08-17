@@ -1,25 +1,26 @@
 Inputs:
     - pt     
     - eta    
-    - phi 
-    - et
+    - phi    
     - photon_ID
     - electron_ID
-    - hadron_ID
+    - muon_ID
+    - neutral_hadron_ID
+    - charged_hadron_ID
     - jet_index # required
 
 Labels:
     - classification
     - jet_index # required
 
-KerasModel: twolayer_model
+KerasModel: threelayer_model
 KerasLoss: binary_crossentropy
 Regression: False
 
 NormalizeInputs: 0
 InputType: dense
 MaxParticles: 10
-Shuffle: 1
-L1Reg: 0.01
+Shuffle: 0
+L1Reg: 0
 
-Filename: twolayer_base
+Filename: threelayer

@@ -224,19 +224,27 @@ if __name__ == "__main__":
 	parser.add_argument('-n', '--number', dest='number', default=0, help='number of events')
 	parser.add_argument('-t', '--tree', dest='tree', default='GenNtupler/gentree', help='tree name')
  	options = parser.parse_args()
-	
-	filename = options.filename
-	print('Converting %s -> %s...'%(filename, filename.replace('.root', '.z')))
 
-	# Convert TTree to numpy structured array
+	# Settings
+	classification = True
+	regression = True
+
+	# Get ROOT TTree	
+	filename = options.filename
 	rf = TFile(filename)              # open file
 	tree = rf.Get(options.tree)       # get TTree
-	arr = convert_data(tree, int(options.number))
-	#arr = convert_regression_data(tree, int(options.number))
-
-	h5File = h5py.File(filename.replace('.root','.z'),'w')	
-	#h5File = h5py.File(filename.replace('.root','_regression.z'),'w')
+	
+	# Convert TTree to numpy structured array 
+	if classification:
+		print('Converting %s -> %s...'%(filename, filename.replace('.root', '.z')))
+		arr = convert_data(tree, int(options.number))
+		h5File = h5py.File(filename.replace('.root','.z'),'w')
+	
+	if regression:
+		print('Converting %s -> %s...'%(filename, filename.replace('.root', '_regression.z')))
+		arr = convert_regression_data(tree, int(options.number))
+		h5File = h5py.File(filename.replace('.root','_regression.z'),'w')
+	
 	h5File.create_dataset(options.tree, data=arr,  compression='lzf')
 	h5File.close()
 	del h5File
-

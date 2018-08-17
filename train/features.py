@@ -1,9 +1,11 @@
+import json
 import h5py
 import numpy as np
 import pandas as pd
 from utilities import progress
 from sklearn.preprocessing import *
 from sklearn.model_selection import train_test_split
+from sklearn.externals import joblib
 seed = 0
 np.random.seed(seed)
 
@@ -185,9 +187,30 @@ def normalize(yaml_config, x_train, x_test):
 	if (yaml_config['NormalizeInputs'] and yaml_config['InputType'] == 'image'):
 		print('Normalizing data...')
 		
+		#TODO
 		raise Exception('Conv2D normalization not yet implemented')
 
 	return x_train, x_test
+
+def normalize_regression(yaml_config, y_train, y_test):
+	"""
+	Return: Scaled y_train, y_test
+	Input: y_train | Training labels
+	       y_test  | Testing labels
+	"""
+	if yaml_config['Regression']:
+		print('Normalizing labels...')
+	
+		scaler = StandardScaler().fit(y_train)
+		y_train = scaler.transform(y_train)
+		y_test = scaler.transform(y_test)
+		
+		# Save StandardScaler
+		output_data = 'saved-data/'
+		filename = yaml_config['Filename']
+		joblib.dump(scaler, output_data + filename + '_scaler.pkl')
+	
+	return y_train, y_test
 
 def get_features(options, yaml_config):
 	"""
@@ -205,8 +228,7 @@ def get_features(options, yaml_config):
 	array = signal_arr
 	if (options.background): 
 		array = np.concatenate([signal_arr, background_arr], axis=0)	
-	
-	if yaml_config['Shuffle']: np.random.shuffle(array)
+	np.random.shuffle(array) # Shuffle the array
 	
 	# List of parameters
 	parameters = yaml_config['Inputs']
@@ -214,22 +236,16 @@ def get_features(options, yaml_config):
 	
 	# Convert to dataframe
 	parameters_df = pd.DataFrame(array, columns=parameters)
-	labels_df = pd.DataFrame(array, columns=labels)	
+	labels_df = pd.DataFrame(array, columns=labels)
+	array_df = pd.DataFrame(array, columns=['classification','jet_pt','jet_eta','jet_phi','jet_index'])
 	labels_df = labels_df.drop_duplicates(subset='jet_index', keep='first')
-
-	# Array transformations
-	if yaml_config['Regression']: arr_parameters = ['jet_pt','jet_eta','jet_phi','jet_energy','jet_index',
-													'tau_pt','tau_eta','tau_phi','tau_energy']
-	else: arr_parameters = ['jet_pt','jet_eta','jet_phi','jet_energy','jet_index','classification']
-
-	array_df = pd.DataFrame(array, columns=arr_parameters)
 	array_df = array_df.drop_duplicates(subset='jet_index', keep='first')
-	array = array_df.values
 
 	# Convert to numpy array
 	parameters_val = parameters_df.values
 	labels_val = labels_df.values[:, :-1]
-
+	array = array_df.values[:, :-1]
+	
 	if yaml_config['InputType'] == 'sequence':
 		parameters_val, labels_val = convert_sequence(yaml_config, parameters, labels, 
 						                              parameters_df, labels_df, parameters_val, labels_val)
@@ -247,7 +263,10 @@ def get_features(options, yaml_config):
 	# Generate train/test split
 	x_train, x_test, y_train, y_test = train_test_split(parameters_val, labels_val, test_size=0.25, random_state=seed)
 	_, _, _, array = train_test_split(parameters_val, array, test_size=0.25, random_state=seed)	
+	
 	x_train, x_test = normalize(yaml_config, x_train, x_test)
+	if yaml_config['Regression']: y_train, y_test = normalize_regression(yaml_config, y_train, y_test)
 
 	return x_train, x_test, y_train, y_test, array
+
 

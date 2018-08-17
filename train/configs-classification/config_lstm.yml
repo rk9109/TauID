@@ -2,24 +2,25 @@ Inputs:
     - pt     
     - eta    
     - phi    
-    - et
     - photon_ID
     - electron_ID
-    - hadron_ID
+    - muon_ID
+    - neutral_hadron_ID
+    - charged_hadron_ID
     - jet_index # required
 
 Labels:
     - classification
     - jet_index # required
 
-KerasModel: threelayer_model
+KerasModel: lstm_model
 KerasLoss: binary_crossentropy
 Regression: False
 
 NormalizeInputs: 0
-InputType: dense
+InputType: sequence
 MaxParticles: 10
-Shuffle: 1
-L1Reg: 0.01
+Shuffle: 0
+L1Reg: 0
 
-Filename: threelayer_base
+Filename: lstm

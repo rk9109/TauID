@@ -8,7 +8,7 @@ import numpy as np
 from keras.callbacks import *
 from models import models
 from features import get_features
-#seed = 42
+#seed = 0
 #numpy.random.seed(seed)
 
 def parse_yaml(config_file):
@@ -79,7 +79,7 @@ def train_model(x_train, y_train, x_test, y_test, model, epochs, batch, val_spli
 	Train model
 	"""
 	# Fit model
-	early_stopping = EarlyStopping(monitor='val_loss', patience=10)
+	early_stopping = EarlyStopping(monitor='val_loss', patience=50)
 	history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch, 
 					    callbacks=[early_stopping], validation_split=val_split, verbose=verbose)
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-s', '--signal', dest='signal', help='input ROOT signal file')
 	parser.add_argument('-b', '--back', dest='background', help='input ROOT background file')
-	parser.add_argument('-t', '--tree', dest='tree', default='dumpP4/objects', help='input ROOT tree')
+	parser.add_argument('-t', '--tree', dest='tree', help='input ROOT tree')
 	parser.add_argument('-l', '--load', dest='load', help='load data file')
 	parser.add_argument('-c', '--config', dest='config', help='configuration file')
 	options = parser.parse_args()
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
 	# Train model
 	gen_model = getattr(models, yaml_config['KerasModel'])
-	if yaml['Regression']: output = 'linear'
+	if yaml_config['Regression']: output = 'linear'
 	else: output = 'sigmoid'
 
 	if yaml_config['InputType'] == 'dense':

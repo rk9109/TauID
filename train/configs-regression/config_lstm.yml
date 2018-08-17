@@ -1,26 +1,28 @@
 Inputs:
     - pt     
-    - eta   
+    - eta    
     - phi    
-    - energy
     - photon_ID
-    - lepton_ID
+    - electron_ID
+    - muon_ID
     - neutral_hadron_ID
     - charged_hadron_ID
     - jet_index # required
 
 Labels:
-    - classification
+    - tau_pt
+    - tau_eta
+    - tau_phi
     - jet_index # required
 
-KerasModel: gru_model
-KerasLoss: binary_crossentropy
-Regression: False
+KerasModel: lstm_model
+KerasLoss: mse
+Regression: True
 
 NormalizeInputs: 0
 InputType: sequence
 MaxParticles: 10
-Shuffle: 1
-L1Reg: 0.01
+Shuffle: 0
+L1Reg: 0
 
-Filename: gru_base
+Filename: lstm
