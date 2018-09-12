@@ -1,7 +1,7 @@
 Inputs:
     - pt     
     - eta    
-    - phi 
+    - phi    
     - photon_ID
     - electron_ID
     - muon_ID
@@ -10,19 +10,17 @@ Inputs:
     - jet_index # required
 
 Labels:
-    - tau_pt
-    - tau_eta
-    - tau_phi
+    - classification
     - jet_index # required
 
-KerasModel: twolayer_model
-KerasLoss: mse
-Regression: True
+KerasModel: lstm_model_medium
+KerasLoss: binary_crossentropy
+Regression: False
 
-NormalizeInputs: 1
-InputType: dense
+NormalizeInputs: 1 
+InputType: sequence
 MaxParticles: 10
 Shuffle: 0
 L1Reg: 0
 
-Filename: twolayer_norm
+Filename: lstm_norm_medium

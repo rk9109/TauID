@@ -239,12 +239,14 @@ if __name__ == "__main__":
 		print('Converting %s -> %s...'%(filename, filename.replace('.root', '.z')))
 		arr = convert_data(tree, int(options.number))
 		h5File = h5py.File(filename.replace('.root','.z'),'w')
+		h5File.create_dataset(options.tree, data=arr,  compression='lzf')
+		h5File.close()
+		del h5File
 	
 	if regression:
 		print('Converting %s -> %s...'%(filename, filename.replace('.root', '_regression.z')))
 		arr = convert_regression_data(tree, int(options.number))
-		h5File = h5py.File(filename.replace('.root','_regression.z'),'w')
-	
-	h5File.create_dataset(options.tree, data=arr,  compression='lzf')
-	h5File.close()
-	del h5File
+		h5File = h5py.File(filename.replace('.root','_regression.z'),'w')	
+		h5File.create_dataset(options.tree, data=arr,  compression='lzf')
+		h5File.close()
+		del h5File

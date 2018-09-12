@@ -5,14 +5,18 @@ from utilities import progress
 from convert import delta_phi 
 from ROOT import *
 
-def create_jets(event):
+def create_jets(event, puppi=False):
 	"""
 	Create jets from particle flow inputs
 	Return: List of jet candidates (seed, [jet_particles])
 	"""
 	part_candidates = []
-	for part in event.pf:
-		part_candidates.append(part)
+	if puppi: 
+		for part in event.pup:
+			part_candidates.append(part)
+	else:
+		for part in event.pf:
+			part_candidates.append(part)
 	
 	# Sort particle candidates by Pt
 	part_candidates_sorted = sorted(part_candidates, key=lambda x: x[0].Pt())[::-1]
@@ -90,7 +94,7 @@ def match_taus(jet_candidates, tau_candidates):
 
 	return jets
 
-def convert_data(tree, number=None, regression=False):
+def convert_data(tree, number=None, regression=False, puppi=False):
 	"""
 	Particle flow inputs => Numpy structured array
 	"""
@@ -105,7 +109,7 @@ def convert_data(tree, number=None, regression=False):
 	eta = []
 	phi = []
 	energy = []
-	photon_ID = []; electron_ID = []; muon_ID; neutral_hadron_ID = []; charged_hadron_ID = []
+	photon_ID = []; electron_ID = []; muon_ID = []; neutral_hadron_ID = []; charged_hadron_ID = []
 	jet_pt = []; jet_eta = []; jet_phi = []; jet_index = []
 	if regression: tau_pt = []; tau_eta = []; tau_phi = []
 	classification = []
@@ -113,7 +117,7 @@ def convert_data(tree, number=None, regression=False):
 	for event in tree:
 		if event_num == total_num: break	
 		
-		jet_candidates = create_jets(event)
+		jet_candidates = create_jets(event, puppi=puppi)
 		tau_candidates = create_taus(event)
 		jets = match_taus(jet_candidates, tau_candidates)
 	
@@ -219,7 +223,7 @@ if __name__ == "__main__":
 	
 	# Settings
 	classification = True
-	regression = True
+	regression = False
 
 	# Get ROOT TTree	
 	filename = options.filename
@@ -229,15 +233,16 @@ if __name__ == "__main__":
 	# Convert TTree to numpy structured array 
 	if classification:
 		print('Converting %s -> %s...'%(filename, filename.replace('.root', '.z')))
-		arr = convert_data(tree, number=int(options.number), regression=False)
-		h5File = h5py.File(filename.replace('.root','.z'),'w')
+		arr = convert_data(tree, number=int(options.number), regression=False, puppi=True)
+		h5File = h5py.File(filename.replace('.root','_puppi.z'),'w')
+		h5File.create_dataset(options.tree, data=arr,  compression='lzf')
+		h5File.close()
+		del h5File
 	
 	if regression:
 		print('Converting %s -> %s...'%(filename, filename.replace('.root', '_regression.z')))
-		arr = convert_data(tree, number=int(options.number), regression=True)
-		h5File = h5py.File(filename.replace('.root','_regression.z'),'w')
-	
-	h5File.create_dataset(options.tree, data=arr,  compression='lzf')
-	h5File.close()
-	del h5File
-
+		arr = convert_data(tree, number=int(options.number), regression=True, puppi=True)
+		h5File = h5py.File(filename.replace('.root','_puppi_regression.z'),'w')
+		h5File.create_dataset(options.tree, data=arr,  compression='lzf')
+		h5File.close()
+		del h5File	

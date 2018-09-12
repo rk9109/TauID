@@ -19,7 +19,7 @@ def plot_efficiency(y_pred, y_true, array, parameter, bins, low, high, output, f
 	total = TH1F("total", "4", bins, low, high)
 	
 	# Get indexes	
-	parameter_list = ['jet_pt','jet_eta','jet_phi']
+	parameter_list = ['classification','jet_pt','jet_eta','jet_phi','jet_index']
 	param_idx = parameter_list.index(parameter)
 	
 	# Get cutoffs
@@ -124,5 +124,5 @@ if __name__ == "__main__":
 	parameter = 'jet_pt'
 	cuts_dict = {'tight': 0.75, 'medium': 0.5, 'loose': 0.25}
 	
-	plot_efficiency(y_pred, array, parameter, bins, low, high, output, filename, cuts_dict, plot='signal')
+	plot_efficiency(y_pred, y_test, array, parameter, bins, low, high, output, filename, cuts_dict, plot='signal')
 

@@ -113,7 +113,40 @@ def conv2d_model(input_shape, nclasses, loss, output, l1Reg=0):
 
 	return model
 
-def lstm_model(input_shape, nclasses, loss, output, l1Reg=0):
+def lstm_model_small(input_shape, nclasses, loss, output, l1Reg=0):
+	"""
+	Simple LSTM
+	"""
+	model = Sequential()
+
+	layers = [LSTM(input_shape=input_shape, units=16, activation='relu', return_sequences=False, W_regularizer = l1(l1Reg)),
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output, W_regularizer = l1(l1Reg))]
+
+	for layer in layers:
+		model.add(layer)
+	
+	model.compile(loss=loss, optimizer=Adam(), metrics=['accuracy'])
+
+	return model
+
+def lstm_model_medium(input_shape, nclasses, loss, output, l1Reg=0):
+	"""
+	Simple LSTM
+	"""
+	model = Sequential()
+
+	layers = [LSTM(input_shape=input_shape, units=64, return_sequences=True, W_regularizer = l1(l1Reg)),
+			  Flatten(),
+			  Dense(units=nclasses, kernel_initializer='random_uniform', activation=output, W_regularizer = l1(l1Reg))]
+
+	for layer in layers:
+		model.add(layer)
+	
+	model.compile(loss=loss, optimizer=Adam(), metrics=['accuracy'])
+
+	return model
+
+def lstm_model_large(input_shape, nclasses, loss, output, l1Reg=0):
 	"""
 	Simple LSTM
 	"""

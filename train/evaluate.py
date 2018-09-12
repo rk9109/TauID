@@ -38,7 +38,7 @@ def plot_history(history, output, filename):
 
 def plot_roc(y_pred, y_test, array, output, filename):
 	"""
-	Return ROC curve
+	Return ROC curve (Using SKLearn)
 	"""	
 	print('Plotting roc...')
 	
@@ -117,7 +117,7 @@ if __name__ == "__main__":
  	options = parser.parse_args()
 	
 	# Check output directory
-	output_plots = 'saved-plots'
+	output_plots = 'saved-plots/'
 
 	if not os.path.isdir(output_plots):
 		print('Specified save directory not found. Creating new directory...')

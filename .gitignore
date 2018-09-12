@@ -1,6 +1,9 @@
 /train/saved-data
+/train/saved-data-puppi
 /train/saved-models
+/train/saved-models-puppi
 /train/saved-plots
+/train/out.log
 
 *.pyc
 *.swp

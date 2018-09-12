@@ -9,8 +9,13 @@
 # TREE="GenNtupler/gentree"
 
 # Variables: PF Data
-SIGNAL_FILE="/data/t3home000/rinik/tauTuple_GluGluHToTauTau_PU140.z"
-BACKGROUND_FILE="/data/t3home000/rinik/tauTuple_QCD_PU140.z"
+# SIGNAL_FILE="/data/t3home000/rinik/tauTuple_GluGluHToTauTau_PU140.z"
+# BACKGROUND_FILE="/data/t3home000/rinik/tauTuple_QCD_PU140.z"
+# TREE="dumpP4/objects"
+
+# Variables: PUPPI Data
+SIGNAL_FILE="/data/t3home000/rinik/tauTuple_GluGluHToTauTau_PU140_puppi.z"
+BACKGROUND_FILE="/data/t3home000/rinik/tauTuple_QCD_PU140_puppi.z"
 TREE="dumpP4/objects"
 
 # Define alias

@@ -1,5 +1,5 @@
 Inputs:
-    - pt    
+    - pt     
     - eta    
     - phi    
     - photon_ID
@@ -10,19 +10,17 @@ Inputs:
     - jet_index # required
 
 Labels:
-    - tau_pt
-    - tau_eta
-    - tau_phi
+    - classification
     - jet_index # required
 
-KerasModel: conv1d_model
-KerasLoss: mse
-Regression: True
+KerasModel: lstm_model_small
+KerasLoss: binary_crossentropy
+Regression: False
 
-NormalizeInputs: 0
+NormalizeInputs: 1 
 InputType: sequence
-MaxParticles: 10
+MaxParticles: 5
 Shuffle: 0
-L1Reg: 0
+L1Reg: 0.001
 
-Filename: conv1D
+Filename: lstm_norm_small

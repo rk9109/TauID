@@ -12,18 +12,16 @@ Inputs:
     - jet_index  # required
 
 Labels:
-    - tau_pt
-    - tau_eta
-    - tau_phi
+    - classification
     - jet_index  # required
 
 KerasModel: conv2d_model
-KerasLoss: mse
-Regression: True
+KerasLoss: binary_crossentropy
+Regression: False
 
 NormalizeInputs: 0
 InputType: image
-Shuffle: 0  
+Shuffle: 0
 L1Reg: 0
 
 BinsX: 10
