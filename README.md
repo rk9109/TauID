@@ -7,7 +7,7 @@ Add directory to python path:
 cd ~/TauID
 source setup.sh
 ```
-## Convert data
+## Convert Data
 To convert ROOT file to numpy structured array:
 ```bash
 cd ~/TauID/convert
